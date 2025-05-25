@@ -307,7 +307,7 @@ export const TestLevel = () => {
     }, [keys]);
 
     return (
-        <div>
+        <div >
             <canvas
                 ref={canvasRef}
                 width={1300}

@@ -1,0 +1,175 @@
+.finishZone {
+    margin-left: 140px;
+    margin-top: 13px;
+    position: absolute;
+    z-index: -1;
+    border: 2px solid black;
+    
+  }
+  
+  .fire {
+    background-color: red;
+  }
+  
+  .water {
+    background-color: blue;
+  }
+
+.hole {
+    border-radius:  0 0 0 0;
+    z-index: 3;
+   
+    
+}
+
+.hole.water {
+    background-color: rgba(0, 8, 255, 0.5);
+    
+}
+
+.hole.fire {
+    background-color: rgba(255, 68, 0, 0.5);
+}
+
+.main {
+    background: linear-gradient(to top, rgb(65, 65, 65), rgb(23, 23, 23));
+    
+    padding-top: 15px;
+    
+}
+
+.timerBadge {
+    position: relative;
+    top: -701px;
+    left: 630px;
+    background: linear-gradient(to top, rgb(26, 26, 26)8%, rgb(70, 70, 70) 60%);
+    color: white;
+    padding: 5px 30px;
+    width: 120px;
+    
+    font-weight: bold;
+    clip-path: polygon(0 0, 100% 0, 85% 100%, 15% 100%);
+    border-radius: 0 0 25px 25px;
+    z-index: 30;
+    text-align: center;
+}
+
+.reloadIcon {
+    cursor: pointer;
+    position: absolute;
+    top: 2px;
+    right: 30px;
+    width: 25px;
+
+}
+
+.houseIcon {
+    cursor: pointer;
+    position: absolute;
+    top: 2px;
+    left: 30px;
+    width: 25px;
+}
+
+
+.lvlCompleted {
+padding-top: 8px;
+padding-bottom: 10px;
+font-weight: 600;
+text-shadow: rgb(149, 149, 149) 1px 1px 0px;
+}
+
+.time {
+    font-weight: 550;
+    padding-bottom: 5px;
+    text-shadow: rgb(149, 149, 149) 1px 1px 0px;
+}
+
+.stars {
+    font-weight: 550;
+    
+    font-size: 25px;
+    
+}
+
+.star {
+
+    opacity: 0;
+    transform: scale(1) translateY(-10px);
+    animation: flyIn 0.2s ease forwards;
+    
+}
+
+.again {
+    position: absolute;
+    width: 110px;
+    height: 30px;
+    bottom: 25px;
+    left: 140px;
+    padding: 5px 10px;
+    border-radius: 5px;
+    border: NONE;
+    background-color: #454540;
+    font-weight: 500;
+    color: rgb(181, 181, 181);
+}
+
+.again:hover {
+    
+    font-weight: 600;
+    border: 1px solid rgb(130, 130, 130)
+}
+
+.gameOver {
+    padding-top: 15px;
+padding-bottom: 10px;
+font-weight: 600;
+text-shadow: rgb(149, 149, 149) 1px 1px 0px;
+}
+
+.gameOverMessage{
+    font-weight: 550;
+    padding-bottom: 5px;
+    text-shadow: rgb(149, 149, 149) 1px 1px 0px;
+}
+
+.playAgain {
+    position: absolute;
+    width: 110px;
+    height: 30px;
+    bottom: 40px;
+    left: 140px;
+    padding: 5px 10px;
+    border-radius: 5px;
+    border: NONE;
+    background-color: #454540;
+    font-weight: 500;
+    color: rgb(181, 181, 181);
+}
+
+.playAgain:hover {
+        font-weight: 600;
+        border: 1px solid rgb(130, 130, 130)   
+}
+
+
+@keyframes flyIn {
+    0% {
+        transform: translateY(-50%) scale(0);
+        opacity: 0;
+    }
+
+    80% {
+        transform: translateY(5px) scale(1.5);
+        opacity: 0.5;
+    }
+
+    100% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+}
+
+
+
+
