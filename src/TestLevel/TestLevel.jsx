@@ -189,33 +189,39 @@ export const TestLevel = () => {
 
      useEffect(() => {
         const gameContainer = gameContainerRef.current;
-        // Нічого не робимо, якщо немає контейнера або ми НЕ в повноекранному режимі
         if (!gameContainer || !isFullScreen) {
             return;
         }
 
         const resizeObserver = new ResizeObserver(entries => {
             for (let entry of entries) {
-                const { width } = entry.contentRect;
-                const scale = width / DESIGN_WIDTH;
-                const newHeight = DESIGN_HEIGHT * scale;
-                
+                const { width: containerWidth, height: containerHeight } = entry.contentRect;
+
+                // 1. Розраховуємо коефіцієнт масштабування по ширині
+                const scaleX = containerWidth / DESIGN_WIDTH;
+                // 2. Розраховуємо коефіцієнт масштабування по висоті
+                const scaleY = containerHeight / DESIGN_HEIGHT;
+
+                // 3. ОБИРАЄМО НАЙМЕНШИЙ коефіцієнт. Це гарантує, що canvas впишеться повністю.
+                const scale = Math.min(scaleX, scaleY);
+
+                // 4. Розраховуємо нові розміри canvas на основі цього єдиного коефіцієнта
+                const newCanvasWidth = DESIGN_WIDTH * scale;
+                const newCanvasHeight = DESIGN_HEIGHT * scale;
+
+                // 5. Оновлюємо стан. Зверніть увагу, scaleX і scaleY тепер однакові.
                 setCanvasSize({
-                    width: width,
-                    height: newHeight,
-                    scaleX: width / DESIGN_WIDTH,
-                    scaleY: newHeight / DESIGN_HEIGHT
+                    width: newCanvasWidth,
+                    height: newCanvasHeight,
+                    scaleX: scale,
+                    scaleY: scale,
                 });
             }
         });
         
-        // Спостерігаємо за контейнером, оскільки ми в повноекранному режимі
         resizeObserver.observe(gameContainer);
+        return () => resizeObserver.disconnect();
 
-        // Функція очищення, яка відключить спостерігача при виході з повноекранного режиму
-        return () => {
-            resizeObserver.disconnect();
-        };
     }, [isFullScreen]);
 
     // Ефект для відстеження стану повноекранного режиму
