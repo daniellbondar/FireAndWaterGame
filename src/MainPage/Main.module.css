@@ -1,0 +1,129 @@
+
+
+.bg {
+   position: absolute;
+    object-fit: cover;
+    width: 100%;
+    filter: brightness(60%);
+    z-index: -1000;
+}
+
+.container {
+    
+    display: grid;
+    grid-template-rows: repeat(3, 2fr);
+    
+    gap: 10px;
+    padding-top: 15%;
+    
+}
+
+.levels {
+    cursor: pointer;
+    
+    
+    border: 5px solid rgb(27, 31, 13);
+    border-radius: 20px;
+    background: #454540;
+
+    margin-top: 30px;
+    margin-left: 36%;
+
+    text-decoration: none;
+    color: #121200;
+    text-shadow: rgb(27, 31, 13) 1px 1px 0px;
+  
+  
+  width: 370px;
+  text-align: center;
+
+  padding-bottom: 10px;
+  
+}
+
+.levelHeader {
+    display: flex;         /* Включаємо Flexbox */
+    align-items: center;   /* Вирівнюємо по вертикалі */
+    justify-content: center; /* Центруємо по горизонталі */
+    gap: 10px;             /* Відстань між назвою та іконкою */
+    width: 100%;           /* Займаємо всю ширину картки */
+}
+
+.levelInfo {
+    text-shadow: rgb(27, 31, 13) 0px 0px 0px;
+}
+
+.timer {
+    text-shadow: rgb(27, 31, 13) 0px 0px 0px;
+    font-weight: 500;
+}
+
+.levels:hover {
+    background: #595952;
+    border: 5px solid rgb(44, 50, 21);
+    color: rgb(44, 50, 21);
+}
+
+.levelName {
+    
+
+    font-style: none;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    
+
+font-weight: 700;
+}
+
+.lockIcon {
+    width: 5%;
+    margin-bottom: 0.2%;
+}
+
+.lockMessage {
+    text-shadow: rgb(27, 31, 13) 0px 0px 0px;
+   font-weight: 600;
+}
+
+.startText {
+    text-shadow: rgb(27, 31, 13) 0px 0px 0px;
+    font-weight: 600;
+    padding-top: 2%;
+}
+
+.starFilled {
+    /* Цей клас можна залишити порожнім, якщо вас влаштовує стандартний вигляд емодзі */
+    /* Або можна додати тінь чи інший ефект */
+    opacity: 1;
+    filter: drop-shadow(0 0 2px gold); /* Додає легке світіння */
+    transition: opacity 0.3s ease;
+}
+
+.starEmpty {
+    /* Робимо "порожню" зірку напівпрозорою, щоб вона виглядала неактивною */
+    opacity: 0.3;
+    transition: opacity 0.3s ease;
+}
+
+.clearBtn {
+    cursor: pointer;
+    position: absolute;
+    width: 150px;
+    height: 30px;
+    bottom: 40px;
+    left: 45%;
+    padding: 5px 10px;
+    border-radius: 5px;
+    border: 2px solid rgb(27, 31, 13);
+    background-color: #454540;
+    font-weight: 500;
+    color: #121200;
+}
+
+.clearBtn:hover{
+    color: rgb(44, 50, 21);
+    border: 2px solid rgb(44, 50, 21);
+}
+
+
+

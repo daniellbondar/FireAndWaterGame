@@ -34,57 +34,41 @@
 .main {
     background: linear-gradient(to top, rgb(65, 65, 65), rgb(23, 23, 23));
     
-    padding-top: 0px;
+    padding-top: 15px;
     
 }
 
-
 .timerBadge {
-    position: absolute;
-    top: 0%;
-    left: 45%;
+    position: relative;
+    top: -701px;
+    left: 44%;
     background: linear-gradient(to top, rgb(26, 26, 26)8%, rgb(70, 70, 70) 60%);
     color: white;
     padding: 5px 30px;
-    width: 10%;
+    width: 120px;
     
     font-weight: bold;
     clip-path: polygon(0 0, 100% 0, 85% 100%, 15% 100%);
     border-radius: 0 0 25px 25px;
     z-index: 30;
-    
-}
-
-.timerBadge span {
-    position: relative;
-    left: 30%;
+    text-align: center;
 }
 
 .reloadIcon {
     cursor: pointer;
     position: absolute;
-    top: 3%;
-    right: 15%;
-    width: 12%;
+    top: 2px;
+    right: 30px;
+    width: 25px;
 
 }
 
 .houseIcon {
     cursor: pointer;
     position: absolute;
-    top: 3%;
-    left: 15%;
-    width: 12%;
-}
-
-
-
-.fullscreenIcon {
-    cursor: pointer;
-    position: absolute;
-    top: 10%;
-    left: 60%;
-    width: 11%;
+    top: 2px;
+    left: 30px;
+    width: 25px;
 }
 
 
@@ -101,20 +85,7 @@ text-shadow: rgb(149, 149, 149) 1px 1px 0px;
     text-shadow: rgb(149, 149, 149) 1px 1px 0px;
 }
 
-.stars {
-    font-weight: 550;
-    
-    font-size: 25px;
-    
-}
 
-.star {
-
-    opacity: 0;
-    transform: scale(1) translateY(-10px);
-    animation: flyIn 0.2s ease forwards;
-    
-}
 
 .again {
     position: absolute;
@@ -132,6 +103,27 @@ text-shadow: rgb(149, 149, 149) 1px 1px 0px;
 
 .again:hover {
     
+    font-weight: 600;
+    border: 1px solid rgb(130, 130, 130)
+}
+
+.previousLevel{
+    cursor: pointer;
+    position: absolute;
+    width: 35px;
+    height: 30px;
+    bottom: 25px;
+    left: 100px;
+    padding: 5px 10px;
+    border-radius: 5px;
+    border: NONE;
+    background-color: #454540;
+    font-weight: 500;
+    font-size: 15px;
+    color: rgb(181, 181, 181);
+}
+
+.previousLevel:hover {
     font-weight: 600;
     border: 1px solid rgb(130, 130, 130)
 }
@@ -168,32 +160,6 @@ text-shadow: rgb(149, 149, 149) 1px 1px 0px;
         border: 1px solid rgb(130, 130, 130)   
 }
 
-.nextLevel{
-    cursor: pointer;
-    position: absolute;
-    width: 35px;
-    height: 30px;
-    bottom: 25px;
-    right: 100px;
-    padding: 5px 10px;
-    border-radius: 5px;
-    border: NONE;
-    background-color: #454540;
-    font-weight: 500;
-    font-size: 15px;
-    color: rgb(181, 181, 181);
-}
-
-.nextLevel:hover {
-    font-weight: 600;
-    border: 1px solid rgb(130, 130, 130)
-}
-
-
-/* .modalStarsContainer{
-    font-size: 25px;
-} */
-
 .modalStarsContainer {
     position: relative;
     display: flex; 
@@ -203,7 +169,7 @@ text-shadow: rgb(149, 149, 149) 1px 1px 0px;
     font-size: 1.7rem;
 }
 
-.starsBackground {
+    .starsBackground {
     
     display: contents; 
 }
@@ -237,7 +203,7 @@ text-shadow: rgb(149, 149, 149) 1px 1px 0px;
     animation: starPopIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 
     
-    filter: drop-shadow(0 0 3px gold);
+    filter: drop-shadow(0 0 5px gold);
 }
 
 
