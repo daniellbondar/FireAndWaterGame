@@ -4,6 +4,7 @@ import SecondLevel from './SecondLevel/SecondLevel'
 import ThirdLevel from "./ThirdLevel/ThirdLevel";
 import Main from './MainPage/Main'
 import styles from "./App.module.css"
+import './i18n/i18n'
 
 
 function App() {

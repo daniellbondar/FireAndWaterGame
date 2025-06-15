@@ -1,0 +1,19 @@
+{
+  "main_page": {
+    "level": "Рівень {{number}}",
+    "lock_message_prev_level": "Щоб грати тут, спершу пройдіть попередній рівень!",
+    "lock_message_stars": "Вам потрібно 2+ зірки на попередньому рівні, щоб відкрити цей.",
+    "start_text": "Вперед до перемоги!",
+    "time": "Час: {{time}}",
+    "clear_results": "Скинути",
+    "confirm_reset": "Ви впевнені, що хочете скинути весь прогрес? Цю дію неможливо буде скасувати."
+  },
+  "level_page": {
+    "game_over": "Гру завершено",
+    "player_perished": "Гравець {{playerType}} загинув!",
+    "player_fell_off": "Гравець {{playerType}} впав!",
+    "play_again": "Грати знову",
+    "level_completed": "Рівень пройдено!",
+    "next_level": "»"
+  }
+}

@@ -1,13 +1,20 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react'; // Added useCallback
 import { Link, useNavigate } from 'react-router-dom';
 import { useLevelData } from '../hooks/useLevelData';
+import { useTranslation } from 'react-i18next';
 import styles from './SecondLevel.module.css';
 import background from '../images and icons/photo_2025-05-17_21-18-18-Picsart-AiImageEnhancer.jpg'
 import bgmodal from '../images and icons/photo_2025-05-17_22-03-58.jpg'
 import reload from '../images and icons/Refresh.svg'
 import house from '../images and icons/Outline.svg'
+import fullScreenIcon from '../images and icons/Full_alt.svg'
+import exitFullScreenIcon from '../images and icons/Reduce.svg'
+
 // import fire from '../images and icons/fireIcon.png' // Assuming you might use these later
 // import water from '../images and icons/waterIcon.png'
+
+const DESIGN_WIDTH = 1100;
+const DESIGN_HEIGHT = 700;
 
 const StarsDisplay = ({ count }) => (
     <div className={styles.modalStarsContainer}>
@@ -45,17 +52,34 @@ export const TestLevel = () => {
     const [gameOverMessage, setGameOverMessage] = useState("");
     const { saveLevelProgress } = useLevelData();
     const [nextLevelUnlocked, setNextLevelUnlocked] = useState(false);
+    const [isFullScreen, setIsFullScreen] = useState(false);
+    
+        const gameContainerRef = useRef(null);
     
     
     const navigate = useNavigate();
 
+    const { t } = useTranslation();
+
+
+    const [canvasSize, setCanvasSize] = useState({
+            width: DESIGN_WIDTH, 
+            height: DESIGN_HEIGHT, 
+            scaleX: 1, 
+            scaleY: 1
+        });
+
     
     const goToNextLevel = () => {
+
+        setLevelDone(false);
         
         navigate('/level3'); 
     };
 
     const goToPreviousLevel = () => {
+        setLevelDone(false);
+
         navigate('/level1')
     }
 
@@ -80,7 +104,7 @@ export const TestLevel = () => {
 
 
     const [staticPlatforms, setStaticPlatforms] = useState([ // Renamed for clarity
-        { x: -20, y: 0, width: 20, height: 700 }, 
+        { x: -20, y: -50, width: 20, height: 750 }, 
         { x: 1100, y: 0, width: 20, height: 700 }, 
 
         { x: 0, y: 100, width: 250, height: 20 },
@@ -134,6 +158,76 @@ export const TestLevel = () => {
         const seconds = time % 60;
         return `${minutes}:${seconds.toString().padStart(2, '0')}`;
     };
+
+    useEffect(() => {
+            const gameContainer = gameContainerRef.current;
+            if (!gameContainer || !isFullScreen) {
+                return;
+            }
+    
+            const resizeObserver = new ResizeObserver(entries => {
+                for (let entry of entries) {
+                    const { width: containerWidth, height: containerHeight } = entry.contentRect;
+    
+                    // 1. Розраховуємо коефіцієнт масштабування по ширині
+                    const scaleX = containerWidth / DESIGN_WIDTH;
+                    // 2. Розраховуємо коефіцієнт масштабування по висоті
+                    const scaleY = containerHeight / DESIGN_HEIGHT;
+    
+                    // 3. ОБИРАЄМО НАЙМЕНШИЙ коефіцієнт. Це гарантує, що canvas впишеться повністю.
+                    const scale = Math.min(scaleX, scaleY);
+    
+                    // 4. Розраховуємо нові розміри canvas на основі цього єдиного коефіцієнта
+                    const newCanvasWidth = DESIGN_WIDTH * scale;
+                    const newCanvasHeight = DESIGN_HEIGHT * scale;
+    
+                    // 5. Оновлюємо стан. Зверніть увагу, scaleX і scaleY тепер однакові.
+                    setCanvasSize({
+                        width: newCanvasWidth,
+                        height: newCanvasHeight,
+                        scaleX: scale,
+                        scaleY: scale,
+                    });
+                }
+            });
+            
+            resizeObserver.observe(gameContainer);
+            return () => resizeObserver.disconnect();
+    
+        }, [isFullScreen]);
+    
+        // Ефект для відстеження стану повноекранного режиму
+         useEffect(() => {
+            const handleFullScreenChange = () => {
+                const isNowFullScreen = !!document.fullscreenElement;
+                setIsFullScreen(isNowFullScreen);
+    
+                // ЯКЩО МИ ВИЙШЛИ з повноекранного режиму
+                if (!isNowFullScreen) {
+                    // Примусово повертаємо canvas до фіксованого розміру
+                    setCanvasSize({
+                        width: DESIGN_WIDTH,
+                        height: DESIGN_HEIGHT,
+                        scaleX: 1,
+                        scaleY: 1,
+                    });
+                }
+                // Якщо ми увійшли в повноекранний режим, то ResizeObserver сам встановить потрібний розмір.
+            };
+    
+            document.addEventListener('fullscreenchange', handleFullScreenChange);
+            return () => document.removeEventListener('fullscreenchange', handleFullScreenChange);
+        }, []);
+    
+        // Функція для перемикання повноекранного режиму
+        const toggleFullScreen = () => {
+            if (!document.fullscreenElement) {
+                gameContainerRef.current?.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        };
+    
 
 
     useEffect(() => {
@@ -337,7 +431,9 @@ export const TestLevel = () => {
             if (plat.holeType && plat.holeType !== player.playerType) {
                 if (player.x < plat.x + plat.width && player.x + player.width > plat.x &&
                     player.y < plat.y + plat.height && player.y + player.height > plat.y) {
-                    setGameOver(true); setGameOverMessage(`Player ${player.playerType} perished!`);
+                    setGameOver(true); 
+                    setGameOverMessage(t('level_page.player_perished', { playerType: player.playerType }));
+                    setTimer(0);
                     return true;
                 }
             }
@@ -372,152 +468,153 @@ export const TestLevel = () => {
                 animationFrameId = requestAnimationFrame(loop); return;
             }
 
+            const { scaleX, scaleY } = canvasSize;
+            const sX = (val) => val * scaleX;
+            const sY = (val) => val * scaleY;
+            const sAvg = (val) => val * Math.min(scaleX, scaleY);
+
             // 1. Update Button States
             let anyBtnPressedThisFrame = false;
-            const updatedButtons = buttons.map(btn => {
-                const isFireOn = firePlayer.current.x < btn.x + btn.width && firePlayer.current.x + firePlayer.current.width > btn.x &&
-                                 firePlayer.current.y + firePlayer.current.height >= btn.originalY && firePlayer.current.y + firePlayer.current.height <= btn.originalY + btn.height + 5;
-                const isWaterOn = waterPlayer.current.x < btn.x + btn.width && waterPlayer.current.x + waterPlayer.current.width > btn.x &&
-                                  waterPlayer.current.y + waterPlayer.current.height >= btn.originalY && waterPlayer.current.y + waterPlayer.current.height <= btn.originalY + btn.height + 5;
-                const currentlyPressed = isFireOn || isWaterOn;
-                if (currentlyPressed) anyBtnPressedThisFrame = true;
-                return { ...btn, isPressed: currentlyPressed };
-            });
-            // Set button state immediately for visual feedback
-            if (JSON.stringify(buttons) !== JSON.stringify(updatedButtons)) { // Only update if changed
-                setButtons(updatedButtons);
+        const updatedButtons = buttons.map(btn => {
+            const isFireOn = firePlayer.current.x < btn.x + btn.width && firePlayer.current.x + firePlayer.current.width > btn.x &&
+                             firePlayer.current.y + firePlayer.current.height >= btn.originalY && firePlayer.current.y + firePlayer.current.height <= btn.originalY + btn.height + 5;
+            const isWaterOn = waterPlayer.current.x < btn.x + btn.width && waterPlayer.current.x + waterPlayer.current.width > btn.x &&
+                              waterPlayer.current.y + waterPlayer.current.height >= btn.originalY && waterPlayer.current.y + waterPlayer.current.height <= btn.originalY + btn.height + 5;
+            const currentlyPressed = isFireOn || isWaterOn;
+            if (currentlyPressed) anyBtnPressedThisFrame = true;
+            return { ...btn, isPressed: currentlyPressed };
+        });
+        if (JSON.stringify(buttons) !== JSON.stringify(updatedButtons)) {
+            setButtons(updatedButtons);
+        }
+        if (anyButtonPressed !== anyBtnPressedThisFrame) {
+            setAnyButtonPressed(anyBtnPressedThisFrame);
+        }
+
+        // 2. Calculate New Moving Platform Positions
+        const platformDeltas = {};
+        const newCalculatedMovingPlatforms = movingPlatforms.map(mp => {
+            const prevPlatformY = mp.currentY;
+            let nextPlatformY = mp.currentY;
+            if (anyBtnPressedThisFrame) {
+                if (nextPlatformY > mp.targetY) nextPlatformY = Math.max(mp.targetY, nextPlatformY - mp.moveSpeed);
+            } else {
+                if (nextPlatformY < mp.originalY) nextPlatformY = Math.min(mp.originalY, nextPlatformY + mp.moveSpeed);
             }
-            if (anyButtonPressed !== anyBtnPressedThisFrame) {
-                setAnyButtonPressed(anyBtnPressedThisFrame);
+            if (prevPlatformY !== nextPlatformY) {
+                platformDeltas[mp.id] = nextPlatformY - prevPlatformY;
             }
+            return { ...mp, currentY: nextPlatformY };
+        });
 
-
-            // 2. Calculate New Moving Platform Positions and store deltas
-            const platformDeltas = {}; // Key: platformId, Value: deltaY
-            const newCalculatedMovingPlatforms = movingPlatforms.map(mp => {
-                const prevPlatformY = mp.currentY;
-                let nextPlatformY = mp.currentY;
-                if (anyBtnPressedThisFrame) {
-                    if (nextPlatformY > mp.targetY) nextPlatformY = Math.max(mp.targetY, nextPlatformY - mp.moveSpeed);
-                } else {
-                    if (nextPlatformY < mp.originalY) nextPlatformY = Math.min(mp.originalY, nextPlatformY + mp.moveSpeed);
-                }
-                if (prevPlatformY !== nextPlatformY) {
-                    platformDeltas[mp.id] = nextPlatformY - prevPlatformY;
-                }
-                return { ...mp, currentY: nextPlatformY };
-            });
-
-            // 3. Pre-Adjust Player Position IF THEY WERE ON A MOVING PLATFORM LAST FRAME
-            [firePlayer.current, waterPlayer.current].forEach(player => {
-                // console.log(`Loop Start - Player ${player.playerType}: onGround=${player.onGround}, standingOn=${player.standingOnPlatformId}, Y=${player.y.toFixed(2)}, velY=${player.velY.toFixed(2)}`);
-                if (player.onGround && player.standingOnPlatformId) { 
-                    const deltaY = platformDeltas[player.standingOnPlatformId];
-                    if (deltaY) { 
-                        // console.log(`Player ${player.playerType} was on ${player.standingOnPlatformId}, platform moved by ${deltaY.toFixed(2)}. Adjusting player Y from ${player.y.toFixed(2)} to ${(player.y + deltaY).toFixed(2)}`);
-                        player.y += deltaY;
-                        // If platform moved up and player was slightly falling, reset velY to stick better
-                        if (deltaY < 0 && player.velY > 0.01) { 
-                            player.velY = 0; 
-                        }
+        // 3. Pre-Adjust Player Position on Moving Platforms
+        [firePlayer.current, waterPlayer.current].forEach(player => {
+            if (player.onGround && player.standingOnPlatformId) {
+                const deltaY = platformDeltas[player.standingOnPlatformId];
+                if (deltaY) {
+                    player.y += deltaY;
+                    if (deltaY < 0 && player.velY > 0.01) {
+                        player.velY = 0;
                     }
                 }
-            });
-            
-            // 4. Update React state for moving platforms
-            // Only update if positions actually changed to avoid unnecessary re-renders from this
-            if (JSON.stringify(movingPlatforms.map(mp=>mp.currentY)) !== JSON.stringify(newCalculatedMovingPlatforms.map(mp=>mp.currentY))) {
-                setMovingPlatforms(newCalculatedMovingPlatforms);
             }
+        });
+        
+        // 4. Update React state for moving platforms
+        if (JSON.stringify(movingPlatforms.map(mp => mp.currentY)) !== JSON.stringify(newCalculatedMovingPlatforms.map(mp => mp.currentY))) {
+            setMovingPlatforms(newCalculatedMovingPlatforms);
+        }
 
+        // 5. Handle Player Movement & Collisions
+        handleMovement(firePlayer, newCalculatedMovingPlatforms, staticPlatforms);
+        handleMovement(waterPlayer, newCalculatedMovingPlatforms, staticPlatforms);
 
-            // 5. Handle Player Movement & Collisions (updates onGround, standingOnPlatformId for NEXT frame)
-            handleMovement(firePlayer, newCalculatedMovingPlatforms, staticPlatforms);
-            handleMovement(waterPlayer, newCalculatedMovingPlatforms, staticPlatforms);
+        // 6. Check if Players Died
+        if (checkIfPlayerDied(firePlayer, staticPlatforms) || checkIfPlayerDied(waterPlayer, staticPlatforms)) {
+             animationFrameId = requestAnimationFrame(loop);
+             return;
+        }
 
-            // console.log(`Loop End - Player ${firePlayer.current.playerType}: onGround=${firePlayer.current.onGround}, standingOn=${firePlayer.current.standingOnPlatformId}, Y=${firePlayer.current.y.toFixed(2)}, velY=${firePlayer.current.velY.toFixed(2)}`);
-            // console.log(`Loop End - Player ${waterPlayer.current.playerType}: onGround=${waterPlayer.current.onGround}, standingOn=${waterPlayer.current.standingOnPlatformId}, Y=${waterPlayer.current.y.toFixed(2)}, velY=${waterPlayer.current.velY.toFixed(2)}`);
+        // --- МАСШТАБУВАННЯ ТА МАЛЮВАННЯ (використовує sX, sY, sAvg) ---
+        
+        // Визначаємо хелпери для малювання на основі поточного розміру canvas
+        
 
-            // 6. Check if Players Died
-            if (checkIfPlayerDied(firePlayer, staticPlatforms) || checkIfPlayerDied(waterPlayer, staticPlatforms)) {
-                 animationFrameId = requestAnimationFrame(loop); // Keep looping to show game over modal
-                 return;
+        // 7. Drawing
+        ctx.clearRect(0, 0, canvas.width, canvas.height); // canvas.width/height вже масштабовані
+
+        // Малюємо статичні платформи та ями
+        staticPlatforms.forEach((plat) => {
+            if (!plat.holeType) ctx.fillStyle = 'gray';
+            else if (plat.holeType === 'fire') ctx.fillStyle = 'rgba(255, 68, 0, 0.5)';
+            else if (plat.holeType === 'water') ctx.fillStyle = 'rgba(0, 8, 255, 0.5)';
+            ctx.fillRect(sX(plat.x), sY(plat.y), sX(plat.width) + sY(1), sY(plat.height) + sY(1)); 
+        });
+        
+        // Малюємо кнопки
+        updatedButtons.forEach(btn => {
+            ctx.fillStyle = btn.isPressed ? btn.pressedColor : btn.color;
+            const buttonDrawY = btn.isPressed ? btn.originalY + btn.pressedYOffset : btn.originalY;
+            const buttonDrawHeight = btn.height - (btn.isPressed ? btn.pressedYOffset : 0);
+            ctx.fillRect(sX(btn.x), sY(buttonDrawY), sX(btn.width), sY(buttonDrawHeight));
+        });
+        
+        // Малюємо рухомі платформи та їх індикатори
+        newCalculatedMovingPlatforms.forEach(mp => {
+            ctx.fillStyle = mp.color;
+            ctx.fillRect(sX(mp.x), sY(mp.currentY), sX(mp.width), sY(mp.height));
+
+            const lineThickness = sAvg(3); // Використовуємо sAvg для ліній
+            const lineColor = anyButtonPressed ? 'rgb(255, 140, 0)' : 'rgb(255, 182, 93)';
+
+            const unscaledLineWidth = mp.width * 0.5;
+            const unscaledLineY = mp.currentY + (mp.height / 2);
+            const unscaledLineStartX = mp.x + (mp.width - unscaledLineWidth) / 2;
+
+            ctx.beginPath();
+            ctx.moveTo(sX(unscaledLineStartX), sY(unscaledLineY));
+            ctx.lineTo(sX(unscaledLineStartX + unscaledLineWidth), sY(unscaledLineY));
+            ctx.strokeStyle = lineColor;
+            ctx.lineWidth = lineThickness;
+            ctx.stroke();
+        });
+
+        // Малюємо фінішні зони
+        finishZones.forEach((zone) => {
+            ctx.fillStyle = zone.color;
+            ctx.fillRect(sX(zone.x), sY(zone.y), sX(zone.width), sY(zone.height));
+            
+            ctx.lineWidth = sAvg(2); // Використовуємо sAvg для ліній
+            if (zone.playerType === 'fire') {
+                ctx.strokeStyle = 'rgb(255, 90, 30)';
+            } else {
+                 ctx.strokeStyle = 'rgb(0, 7, 212)';
             }
+            ctx.strokeRect(sX(zone.x), sY(zone.y), sX(zone.width), sY(zone.height));
+        });
 
-            // 7. Drawing
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            staticPlatforms.forEach((plat) => {
-                if (!plat.holeType) ctx.fillStyle = 'gray';
-                else if (plat.holeType === 'fire') ctx.fillStyle = 'rgba(255, 68, 0, 0.5)';
-                else if (plat.holeType === 'water') ctx.fillStyle = 'rgba(0, 8, 255, 0.5)';
-                ctx.fillRect(plat.x, plat.y, plat.width, plat.height);
-            });
-            
-            updatedButtons.forEach(btn => {
-                ctx.fillStyle = btn.isPressed ? btn.pressedColor : btn.color;
-                const buttonDrawY = btn.isPressed ? btn.originalY + btn.pressedYOffset : btn.originalY;
-                ctx.fillRect(btn.x, buttonDrawY, btn.width, btn.height - (btn.isPressed ? btn.pressedYOffset : 0));
-            });
-            
-            newCalculatedMovingPlatforms.forEach(mp => {
-    // 1. Малюємо саму платформу
-    ctx.fillStyle = mp.color;
-    ctx.fillRect(mp.x, mp.currentY, mp.width, mp.height);
+        // Малюємо гравців
+        [firePlayer.current, waterPlayer.current].forEach((p) => {
+            ctx.fillStyle = p.color;
+            ctx.fillRect(sX(p.x), sY(p.y), sX(p.width), sY(p.height));
+        });
 
-    // 2. Визначаємо колір лінії на основі стану кнопок
-    // Використовуємо 'anyButtonPressed', яке вже розраховується в кожному кадрі
-    const lineThickness = 3;
-    const lineColor = anyButtonPressed ? 'rgb(255, 140, 0)' : 'rgb(255, 182, 93)'; // Яскравий, коли кнопка натиснута; блідий, коли ні.
-
-    // 3. Розраховуємо правильні координати для лінії (відносно полотна)
-    const lineWidth = mp.width * 0.5; // Довжина лінії
-    const lineY = mp.currentY + (mp.height / 2); // Вертикальний центр платформи
-    const lineStartX = mp.x + (mp.width - lineWidth) / 2; // Горизонтальний початок лінії (щоб була по центру)
-
-    // 4. Малюємо лінію-індикатор
-    ctx.beginPath();
-    ctx.moveTo(lineStartX, lineY);
-    ctx.lineTo(lineStartX + lineWidth, lineY);
-    ctx.strokeStyle = lineColor;
-    ctx.lineWidth = lineThickness;
-    ctx.stroke();
-});
-
-             finishZones.forEach((zone) => {
-                ctx.fillStyle = zone.color; ctx.fillRect(zone.x, zone.y, zone.width, zone.height);
-                ctx.strokeStyle = 'rgb(0, 7, 212)';
-                ctx.lineWidth = 2;
-
-                if (zone.playerType === 'fire') {
-                    ctx.strokeStyle = 'rgb(255, 90, 30)';
-                }
-
-                ctx.strokeRect(zone.x, zone.y, zone.width, zone.height)
-            });
-
-            [firePlayer.current, waterPlayer.current].forEach((p) => {
-                ctx.fillStyle = p.color; ctx.fillRect(p.x, p.y, p.width, p.height);
-            });
-
-            
-            const fireDone = hasReachedFinish(firePlayer.current, finishZones[0]);
-            const waterDone = hasReachedFinish(waterPlayer.current, finishZones[1]);
-            
-
-                if (fireDone && waterDone && !levelDone && !gameOver) {
-    
-                    const earnedStars = calculateStars(timer);
-                    saveLevelProgress('level2', timer, earnedStars); 
-                    setLevelDone(true); 
-                    if (earnedStars >= 2) {
-                    setNextLevelUnlocked(true);
-                } else {
-                    setNextLevelUnlocked(false);
-                }
-}
-                
-            
-            animationFrameId = requestAnimationFrame(loop);
+        // --- ЛОГІКА ЗАВЕРШЕННЯ РІВНЯ ---
+        const fireDone = hasReachedFinish(firePlayer.current, finishZones[0]);
+        const waterDone = hasReachedFinish(waterPlayer.current, finishZones[1]);
+        
+        if (fireDone && waterDone && !levelDone && !gameOver) {
+            const earnedStars = calculateStars(timer);
+            saveLevelProgress('level2', timer, earnedStars);
+            setLevelDone(true);
+            if (earnedStars >= 2) {
+                setNextLevelUnlocked(true);
+            } else {
+                setNextLevelUnlocked(false);
+            }
+        }
+        
+        animationFrameId = requestAnimationFrame(loop);
         };
         loop();
         return () => {
@@ -526,42 +623,58 @@ export const TestLevel = () => {
             cancelAnimationFrame(animationFrameId);
         };
     }, [gameOver, levelDone, staticPlatforms, buttons, movingPlatforms, anyButtonPressed, 
-        handleMovement, checkIfPlayerDied, keys, saveLevelProgress, calculateStars, timer]);
+        handleMovement, checkIfPlayerDied, keys, saveLevelProgress, calculateStars, timer, setNextLevelUnlocked]);
 
     return (
         <div className={styles.main} style={{ width: '100%', height: '100vh' }}>
-            <canvas ref={canvasRef} width={1100} height={700}
+            <div ref={gameContainerRef} className={styles.gameContainer}>
+            <canvas ref={canvasRef} width={canvasSize.width} height={canvasSize.height}
                 style={{ border: '1px solid black', display: 'block', margin: '0 auto',
                          backgroundImage: `url(${background})`, backgroundSize: 'cover' }} />
             <div className={styles.timerBadge}>
                 <Link to='/'>
                 <img src={house} alt="Home" className={styles.houseIcon} />
                 </Link>
-                 {formatTime(timer)}
+                <span className={styles.timer}>{formatTime(timer)} </span>
                 <img src={reload} alt="Reload" className={styles.reloadIcon} onClick={resetGame} />
+                {isFullScreen ? (
+    <img 
+        src={exitFullScreenIcon} 
+        alt="Exit Fullscreen" 
+        className={styles.fullscreenIcon} 
+        onClick={toggleFullScreen} 
+    />
+) : (
+    <img 
+        src={fullScreenIcon} 
+        alt="Enter Fullscreen" 
+        className={styles.fullscreenIcon} 
+        onClick={toggleFullScreen} 
+    />
+)}
             </div>
 
 
             {gameOver && ( <div style={{ backgroundImage: `url(${bgmodal})`, backgroundSize: 'cover', backgroundPosition: 'center top -20px',
                     width: '350px', height: '150px', textAlign: 'center', position: 'absolute',
                     top: '50%', left: '50%', transform: 'translate(-50%, -50%)', padding: '20px', borderRadius: '15px' }}>
-                    <h2 className={styles.gameOver}>Game over</h2> 
+                    <h2 className={styles.gameOver}>{t('level_page.game_over')}</h2> 
                     <p className={styles.gameOverMessage}>{gameOverMessage}</p>
-                    <button onClick={resetGame} className={styles.playAgain}>Play again</button> </div> )}
+                    <button onClick={resetGame} className={styles.playAgain}>{t('level_page.play_again')}</button> </div> )}
 
 
-            {/* {levelDone && (  */}
+            {levelDone && ( 
                 <div style={{ backgroundImage: `url(${bgmodal})`, backgroundSize: 'cover', backgroundPosition: 'center top -20px',
                     width: '350px', height: '150px', textAlign: 'center', position: 'absolute',
                     top: '50%', left: '50%', transform: 'translate(-50%, -50%)', padding: '20px', borderRadius: '15px' }}>
-                    <h2 className={styles.lvlCompleted}>Level Completed!</h2> 
-                    <p className={styles.time}>Time: {formatTime(timer)}</p>
+                    <h2 className={styles.lvlCompleted}>{t('level_page.level_completed')}</h2> 
+                    <p className={styles.time}>{t('main_page.time', { time: formatTime(timer) })}</p>
                     <StarsDisplay count={stars} />
-                    <button onClick={resetGame} className={styles.again}>Play again</button> 
+                    <button onClick={resetGame} className={styles.again}>{t('level_page.play_again')}</button> 
                     <button onClick={goToNextLevel} className={styles.nextLevel} disabled={!nextLevelUnlocked}>  &raquo; </button>
                     <button onClick={goToPreviousLevel} className={styles.previousLevel}> &laquo; </button>
                     </div> 
-                 {/* )}  */}
+                  )}  
 
                     {/* {!nextLevelUnlocked && (
                         <p className={styles.unlockMessage}>
@@ -569,6 +682,8 @@ export const TestLevel = () => {
                         </p>
                     )} */}
         </div>
+    </div>
+        
     );
 };
 export default TestLevel;

@@ -1,6 +1,7 @@
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useLevelData } from '../hooks/useLevelData';
 import styles from './Level.module.css'; 
 import background from '../images and icons/photo_2025-05-17_21-18-18-Picsart-AiImageEnhancer.jpg';
@@ -57,7 +58,7 @@ export const TestLevel = () => {
 
     const gameContainerRef = useRef(null); // Ref для головного контейнера гри
 
-    // ... ваші існуючі useState
+   const { t } = useTranslation();
     
     
     // Замініть ваш старий useState для canvasSize на цей
@@ -71,6 +72,8 @@ export const TestLevel = () => {
 
     
     const goToNextLevel = () => {
+
+        setLevelDone(false);
         
         navigate('/level2'); 
     };
@@ -129,7 +132,8 @@ export const TestLevel = () => {
 
         // Walls
         { x: 1100, y: 0, width: 20, height: 700 },
-        { x: -20, y: 0, width: 20, height: 700 },
+        { x: -20, y: -50, width: 20, height: 750 },
+        { x: 0, y: -30, width: 1100, height: 20 },
     ]);
 
     
@@ -177,7 +181,7 @@ export const TestLevel = () => {
     ];
     const [levers, setLevers] = useState(initialLevers);
 
-    const groundY = 700; // Based on canvas height and typical ground placement
+    const groundY = staticPlatforms; // Based on canvas height and typical ground placement
 
     const formatTime = useCallback((time) => {
         const minutes = Math.floor(time / 60);
@@ -595,7 +599,7 @@ setMovingPlatforms(prevMovingPlats =>
                 if (player.x < plat.x + plat.width && player.x + player.width > plat.x &&
                     player.y < plat.y + plat.height && player.y + player.height > plat.y) {
                     setGameOver(true); 
-                    setGameOverMessage(`Player ${player.playerType} perished!`);
+                    setGameOverMessage(t('level_page.player_perished', { playerType: player.playerType }));
                     setTimer(0); // Reset timer on death as per original
                     return true;
                 }
@@ -604,7 +608,7 @@ setMovingPlatforms(prevMovingPlats =>
         // Check if fallen off bottom of canvas
         if (player.y > canvasRef.current?.height + player.height) {
              setGameOver(true); 
-             setGameOverMessage(`Player ${player.playerType} fell off!`);
+             setGameOverMessage(t('level_page.player_fell_off', { playerType: player.playerType }));
              setTimer(0);
              return true;
         }
@@ -703,7 +707,7 @@ setMovingPlatforms(prevMovingPlats =>
                 if (!plat.holeType) ctx.fillStyle = 'gray';
                 else if (plat.holeType === 'fire') ctx.fillStyle = 'rgba(255, 68, 0, 0.5)';
                 else if (plat.holeType === 'water') ctx.fillStyle = 'rgba(0, 8, 255, 0.5)';
-                ctx.fillRect(sX(plat.x), sY(plat.y), sX(plat.width), sY(plat.height) + 1); // +1 to fix gaps
+                ctx.fillRect(sX(plat.x), sY(plat.y), sX(plat.width) + sY(1), sY(plat.height) + sY(1));
             });
 
             // Moving Platforms
@@ -825,6 +829,11 @@ setMovingPlatforms(prevMovingPlats =>
                 setStars(earnedStars);
                 saveLevelProgress('level1', timer, earnedStars); 
                 setLevelDone(true); 
+                if (earnedStars >= 2) {
+                    setNextLevelUnlocked(true);
+                } else {
+                    setNextLevelUnlocked(false);
+                }
             }
                 
             animationFrameId = requestAnimationFrame(loop);
@@ -837,7 +846,7 @@ setMovingPlatforms(prevMovingPlats =>
         };
     }, [
         gameOver, levelDone, staticPlatforms, movingPlatforms, levers, keys, // Core state and interaction
-        handleMovement, checkIfPlayerDied, handlePlayerPushLever, activateLeveredPlatform, saveLevelProgress, calculateStars, timer]);
+        handleMovement, checkIfPlayerDied, handlePlayerPushLever, activateLeveredPlatform, saveLevelProgress, calculateStars, timer, setNextLevelUnlocked]);
 
 
     return (
@@ -880,12 +889,12 @@ setMovingPlatforms(prevMovingPlats =>
             {gameOver && (
                 <div style={{
                     backgroundImage: `url(${bgmodal})`, backgroundSize: 'cover', backgroundPosition: 'center top -20px',
-                    width: '350px', height: '150px', textAlign: 'center', position: 'absolute',
+                    width: '25%', height: '200px', textAlign: 'center', position: 'absolute',
                     top: '50%', left: '50%', transform: 'translate(-50%, -50%)', padding: '20px', borderRadius: '15px'
                 }}>
-                    <h2 className={styles.gameOver}>Game over</h2>
+                    <h2 className={styles.gameOver}>{t('level_page.game_over')}</h2>
                     <p className={styles.gameOverMessage}>{gameOverMessage}</p>
-                    <button onClick={resetGame} className={styles.playAgain}>Play again</button>
+                    <button onClick={resetGame} className={styles.again}>{t('level_page.play_again')}</button>
                 </div>
             )}
 
@@ -895,10 +904,10 @@ setMovingPlatforms(prevMovingPlats =>
                     width: '350px', height: '150px', textAlign: 'center', position: 'absolute',
                     top: '50%', left: '50%', transform: 'translate(-50%, -50%)', padding: '20px', borderRadius: '15px'
                 }}>
-                    <h2 className={styles.lvlCompleted}>Level Completed!</h2>
-                    <p className={styles.time}>Time: {formatTime(timer)}</p>
+                    <h2 className={styles.lvlCompleted}>{t('level_page.level_completed')}</h2>
+                    <p className={styles.time}>{t('main_page.time', { time: formatTime(timer) })}</p>
                     <StarsDisplay count={stars} />
-                    <button onClick={resetGame} className={styles.again}>Play again</button>
+                    <button onClick={resetGame} className={styles.again}>{t('level_page.play_again')}</button>
                     <button onClick={goToNextLevel} className={styles.nextLevel} disabled={!nextLevelUnlocked}>  &raquo; </button>
                 </div>
                 

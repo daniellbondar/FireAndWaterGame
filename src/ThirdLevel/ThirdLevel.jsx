@@ -1,10 +1,17 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useLevelData } from '../hooks/useLevelData';
+import { useTranslation } from 'react-i18next';
 import styles from './ThirdLevel.module.css';
 import background from '../images and icons/photo_2025-05-17_21-18-18-Picsart-AiImageEnhancer.jpg';
 import bgmodal from '../images and icons/photo_2025-05-17_22-03-58.jpg';
 import reloadIconImg from '../images and icons/Refresh.svg';
 import houseIconImg from '../images and icons/Outline.svg';
+import fullScreenIcon from '../images and icons/Full_alt.svg'
+import exitFullScreenIcon from '../images and icons/Reduce.svg'
+
+const DESIGN_WIDTH = 1100;
+const DESIGN_HEIGHT = 700;
 
 const StarsDisplay = ({ count }) => (
     <div className={styles.modalStarsContainer}>
@@ -41,12 +48,25 @@ export const ThirdLevel = () => {
     const [stars, setStars] = useState(0);
     const [gameOver, setGameOver] = useState(false);
     const [gameOverMessage, setGameOverMessage] = useState("");
-    const [nextLevelUnlocked, setNextLevelUnlocked] = useState(false);
+    const { saveLevelProgress } = useLevelData();
+    const [isFullScreen, setIsFullScreen] = useState(false);
+    const gameContainerRef = useRef(null);
+    const { t } = useTranslation();
+
+
+    const [canvasSize, setCanvasSize] = useState({
+            width: DESIGN_WIDTH, 
+            height: DESIGN_HEIGHT, 
+            scaleX: 1, 
+            scaleY: 1
+        });
     
     
     const navigate = useNavigate();
 
     const goToPreviousLevel = () => {
+        setLevelDone(false);
+
         navigate('/level1')
     }
 
@@ -72,7 +92,7 @@ export const ThirdLevel = () => {
         {x: 300, y: 540, width: 150, height: 10},
         {x: 600, y: 540, width: 100, height: 10},
         {x: 450, y: 540, width: 150, height: 10, holeType: 'fire'},
-        {x: 150, y: 490, width: 50, height: 20},
+        {x: 150, y: 490, width: 70, height: 20},
 
         {x: 140, y: 390, width: 100, height: 20},
         {x: 240, y: 400, width: 200, height: 10},
@@ -86,6 +106,8 @@ export const ThirdLevel = () => {
         {x: 110, y: 290, width: 90, height: 10},
         {x: 330, y: 200, width: 210, height: 20},
         {x: 150, y: 100, width: 200, height: 20},
+        {x: 30, y: 200, width: 100, height: 20},
+        {x: 100, y: 150, width: 100, height: 20},
 
         {x: 540, y: 0, width: 20, height: 410},
 
@@ -104,64 +126,85 @@ export const ThirdLevel = () => {
         {x: 0, y: -20, width: 1100, height: 20},
         {x: -20, y: 0, width: 20, height: 800},
         {x: 1100, y: 0, width: 20, height: 800},
-
-
     ]);
 
     // Moving Platforms
     const initialMovingPlatforms = [
-        {
-            id: 'verticalPlatform',
-            x: 600,
-            initialY: 220, // Починає знизу
-            currentY: 220,
-            width: 80,
-            height: 20,
-            isMovingActive: false,
-            directionIsDown: true, // Початковий напрямок не важливий, важіль його змінить
-            // ▼▼▼ ВИПРАВЛЕНО ▼▼▼
-            yRange: { from: 90, to: 220 }, // from: верхня точка, to: нижня точка
-            speed: 0.4,
-            color: 'gray',
-            movementType: 'vertical'
-        },
-        {
-            id: 'horizontalPlatform',
-            initialX: 200,
-            currentX: 200,
-            y: 520,
-            width: 80,
-            height: 20,
-            isMovingActive: false,
-            directionIsRight: true,
-            xRange: { from: 10, to: 200 },
-            speed: 0.7,
-            color: 'gray',
-            movementType: 'horizontal'
-        }
+        { id: 'verticalPlatform', x: 600, initialY: 220, currentY: 220, width: 80, height: 20, isMovingActive: false, directionIsDown: true, yRange: { from: 90, to: 220 }, speed: 0.4, color: 'gray', movementType: 'vertical' },
+        { id: 'horizontalPlatform', initialX: 200, currentX: 200, y: 520, width: 80, height: 20, isMovingActive: false, directionIsRight: true, xRange: { from: 10, to: 200 }, speed: 0.7, color: 'gray', movementType: 'horizontal' }
     ];
     const [movingPlatforms, setMovingPlatforms] = useState(initialMovingPlatforms);
 
     // Levers
     const initialLevers = [
-        {
-            id: 1, x: 170, y: 90, width: 25, height: 10, activated: false,
-            initialTiltDirection: 'right', activatesPlatformId: 'verticalPlatform', lastActivationTime: 0
-        },
-        {
-            id: 2, x: 1020, y: 80, width: 25, height: 10, activated: false,
-            initialTiltDirection: 'left', activatesPlatformId: 'horizontalPlatform', lastActivationTime: 0
-        }
+        { id: 1, x: 230, y: 90, width: 25, height: 10, activated: false, initialTiltDirection: 'right', activatesPlatformId: 'verticalPlatform', lastActivationTime: 0 },
+        { id: 2, x: 1020, y: 80, width: 25, height: 10, activated: false, initialTiltDirection: 'left', activatesPlatformId: 'horizontalPlatform', lastActivationTime: 0 }
     ];
     const [levers, setLevers] = useState(initialLevers);
-
-    const groundY = 690; // Використовуємо main ground y
 
     const formatTime = useCallback((time) => {
         const minutes = Math.floor(time / 60);
         const seconds = time % 60;
         return `${minutes}:${seconds.toString().padStart(2, '0')}`;
     }, []);
+
+    // FIX: Додано ефект, який скидає гру при зміні стану повноекранного режиму.
+    // Це забезпечує правильне початкове положення гравців.
+    useEffect(() => {
+        resetGame();
+    }, [isFullScreen]);
+
+    useEffect(() => {
+        const gameContainer = gameContainerRef.current;
+        if (!gameContainer) return;
+
+        const resizeObserver = new ResizeObserver(entries => {
+            if (!document.fullscreenElement) return;
+
+            for (let entry of entries) {
+                const { width: containerWidth, height: containerHeight } = entry.contentRect;
+                const scaleX = containerWidth / DESIGN_WIDTH;
+                const scaleY = containerHeight / DESIGN_HEIGHT;
+                const scale = Math.min(scaleX, scaleY);
+                const newCanvasWidth = DESIGN_WIDTH * scale;
+                const newCanvasHeight = DESIGN_HEIGHT * scale;
+                setCanvasSize({
+                    width: newCanvasWidth,
+                    height: newCanvasHeight,
+                    scaleX: scale,
+                    scaleY: scale,
+                });
+            }
+        });
+        
+        resizeObserver.observe(gameContainer);
+        return () => resizeObserver.disconnect();
+    }, []);
+
+     useEffect(() => {
+        const handleFullScreenChange = () => {
+            const isNowFullScreen = !!document.fullscreenElement;
+            setIsFullScreen(isNowFullScreen);
+            if (!isNowFullScreen) {
+                setCanvasSize({
+                    width: DESIGN_WIDTH,
+                    height: DESIGN_HEIGHT,
+                    scaleX: 1,
+                    scaleY: 1,
+                });
+            }
+        };
+        document.addEventListener('fullscreenchange', handleFullScreenChange);
+        return () => document.removeEventListener('fullscreenchange', handleFullScreenChange);
+    }, []);
+
+    const toggleFullScreen = () => {
+        if (!document.fullscreenElement) {
+            gameContainerRef.current?.requestFullscreen();
+        } else {
+            document.exitFullscreen();
+        }
+    };
 
     useEffect(() => {
         let timerInterval;
@@ -175,9 +218,8 @@ export const ThirdLevel = () => {
 
     const calculateStars = useCallback((time) => {
         if (time <= 25) return 3;
-        if (time > 25 || time < 35) return 2;
-        if (time >= 35) return 1;
-        
+        if (time <= 35) return 2;
+        return 1;
     }, []);
 
     const showModal = useCallback(() => {
@@ -193,32 +235,19 @@ export const ThirdLevel = () => {
     }, [levelDone, showModal]);
 
     const firePlayer = useRef({
-        x: 470, 
-        y: 250, 
-        width: 40, 
-        height: 40, 
-        velY: 0, 
-        playerType: 'fire', 
-        onGround: false,
-        standingOnPlatformId: null, 
-        color: 'rgb(255, 89, 29)',
+        x: 470, y: 250, width: 40, height: 40, velY: 0, playerType: 'fire', onGround: false,
+        standingOnPlatformId: null, color: 'rgb(255, 89, 29)',
         controls: { left: 'a', right: 'd', jump: 'w' },
         cyrillic_controls: { left: 'ф', right: 'в', jump: 'ц' }
     });
 
     const waterPlayer = useRef({
-        x: 590, 
-        y: 250, 
-        width: 40, 
-        height: 40, 
-        velY: 0, 
-        playerType: 'water', 
-        onGround: false,
-        standingOnPlatformId: null, 
-        color: 'rgb(0, 7, 212)',
+        x: 590, y: 250, width: 40, height: 40, velY: 0, playerType: 'water', onGround: false,
+        standingOnPlatformId: null, color: 'rgb(0, 7, 212)',
         controls: { left: 'ArrowLeft', right: 'ArrowRight', jump: 'ArrowUp' }
     });
 
+    // FIX: Спрощено `resetGame` для надійності, залежності видалено, оскільки вони константні.
     const resetGame = useCallback(() => {
         setLevelDone(false);
         setTimer(0);
@@ -228,15 +257,15 @@ export const ThirdLevel = () => {
         firePlayer.current = { ...firePlayer.current, x: 470, y: 250, velY: 0, onGround: false, standingOnPlatformId: null };
         waterPlayer.current = { ...waterPlayer.current, x: 590, y: 250, velY: 0, onGround: false, standingOnPlatformId: null };
         setLevers(initialLevers.map(l => ({ ...l, activated: false, lastActivationTime: 0 })));
-        setMovingPlatforms(initialMovingPlatforms.map(p => {
-             if (p.movementType === 'vertical') {
-                return { ...p, currentY: p.initialY, isMovingActive: false, directionIsDown: true };
-            } else if (p.movementType === 'horizontal') {
-                return { ...p, currentX: p.initialX, isMovingActive: false, directionIsRight: true };
-            }
-            return p;
-        }));
-    }, [initialLevers, initialMovingPlatforms]);
+        setMovingPlatforms(initialMovingPlatforms.map(p => ({
+            ...p,
+            currentY: p.initialY,
+            currentX: p.initialX,
+            isMovingActive: false,
+            directionIsDown: true,
+            directionIsRight: true,
+        })));
+    }, []);
 
     const finishZones = [
         { x: 30, y: 630, width: 40, height: 50, color: 'gray', playerType: 'fire' },
@@ -251,34 +280,26 @@ export const ThirdLevel = () => {
         player.playerType === zone.playerType
     );
     
-    // ▼▼▼ ВИПРАВЛЕНО ТА СПРОЩЕНО ▼▼▼
     const handlePlayerPushLever = useCallback((playerRef) => {
-        const leverCooldownMs = 5000; // Кулдаун, щоб уникнути подвійних натискань
+        const leverCooldownMs = 5000;
         const player = playerRef.current;
         const currentTime = Date.now();
 
         setLevers(prevLevers => {
             let stateActuallyChanged = false;
             const updatedLevers = prevLevers.map(lever => {
-                const playerRect = { x: player.x, y: player.y, width: player.width, height: player.height };
-                const leverRect = { x: lever.x, y: lever.y, width: lever.width, height: lever.height };
-
                 if (
-                    playerRect.x < leverRect.x + leverRect.width &&
-                    playerRect.x + playerRect.width > leverRect.x &&
-                    playerRect.y < leverRect.y + leverRect.height &&
-                    playerRect.y + playerRect.height > leverRect.y
+                    player.x < lever.x + lever.width &&
+                    player.x + player.width > lever.x &&
+                    player.y < lever.y + lever.height &&
+                    player.y + player.height > lever.y
                 ) {
                     if (currentTime - lever.lastActivationTime < leverCooldownMs) {
-                        return lever; // Зарано, нічого не робимо
+                        return lever;
                     }
-
                     setMovingPlatforms(prevMovingPlats =>
                         prevMovingPlats.map(plat => {
                             if (plat.id === lever.activatesPlatformId) {
-                                // Проста і надійна логіка:
-                                // 1. Завжди активуємо рух.
-                                // 2. Завжди змінюємо напрямок на протилежний.
                                 if (plat.movementType === 'vertical') {
                                     return { ...plat, isMovingActive: true, directionIsDown: !plat.directionIsDown };
                                 } else if (plat.movementType === 'horizontal') {
@@ -293,11 +314,11 @@ export const ThirdLevel = () => {
                 }
                 return lever;
             });
-            if (stateActuallyChanged) return updatedLevers;
-            return prevLevers;
+            return stateActuallyChanged ? updatedLevers : prevLevers;
         });
     }, [setLevers, setMovingPlatforms]);
 
+    // FIX: Логіка руху тепер працює ТІЛЬКИ з логічними координатами. Без sX/sY.
     const handleMovement = useCallback((playerRef, currentFrameMovingPlatforms, currentStaticPlatforms) => {
         const player = playerRef.current;
         const controls = player.controls;
@@ -328,7 +349,9 @@ export const ThirdLevel = () => {
                 id: mp.id,
                 x: mp.movementType === 'horizontal' ? mp.currentX : mp.x,
                 y: mp.movementType === 'vertical' ? mp.currentY : mp.y,
-                width: mp.width, height: mp.height, isMoving: true
+                width: mp.width,
+                height: mp.height,
+                isMoving: true
             }))
         ];
 
@@ -341,8 +364,8 @@ export const ThirdLevel = () => {
             const platBottom = plat.y + plat.height;
 
             if (prevPlayerY + player.height <= plat.y + 1 &&
-                 playerBottom >= plat.y && playerBottom <= platBottom &&
-                 playerRight > plat.x && player.x < plat.x + plat.width) {
+                playerBottom >= plat.y && playerBottom <= platBottom &&
+                playerRight > plat.x && player.x < plat.x + plat.width) {
                 player.y = plat.y - player.height;
                 player.velY = 0;
                 player.onGround = true;
@@ -351,9 +374,9 @@ export const ThirdLevel = () => {
             }
 
             if (prevPlayerY >= platBottom - 1 &&
-                 player.y <= platBottom && player.y >= plat.y &&
-                 playerRight > plat.x && player.x < plat.x + plat.width &&
-                 player.velY < 0) {
+                player.y <= platBottom && player.y >= plat.y &&
+                playerRight > plat.x && player.x < plat.x + plat.width &&
+                player.velY < 0) {
                 player.y = platBottom;
                 player.velY = 0;
             }
@@ -366,13 +389,13 @@ export const ThirdLevel = () => {
                 }
             }
         });
-        
+
         if (!landedOnPlatformThisFrame) {
             player.standingOnPlatformId = null;
         }
+    }, [keys, gravity, jumpForce, speed]);
 
-    }, [keys, gravity, jumpForce, speed, staticPlatforms]);
-
+    // FIX: Перевірка смерті тепер теж працює з логічними координатами.
     const checkIfPlayerDied = useCallback((playerRef, currentAllPlatformsToCheck) => {
         const player = playerRef.current;
         for (let plat of currentAllPlatformsToCheck) {
@@ -383,14 +406,14 @@ export const ThirdLevel = () => {
                 if (player.x < platX + plat.width && player.x + player.width > platX &&
                     player.y < platY + plat.height && player.y + player.height > platY) {
                     setGameOver(true);
-                    setGameOverMessage(`Player ${player.playerType} perished!`);
+                    setGameOverMessage(t('level_page.player_perished', { playerType: player.playerType }));
                     return true;
                 }
             }
         }
-        if (player.y > (canvasRef.current?.height || 700)) {
+        if (player.y > DESIGN_HEIGHT) { // Перевірка падіння за межі логічного поля
              setGameOver(true);
-             setGameOverMessage(`Player ${player.playerType} fell off!`);
+             setGameOverMessage(t('level_page.player_fell_off', { playerType: player.playerType }));
              return true;
         }
         return false;
@@ -414,6 +437,11 @@ export const ThirdLevel = () => {
                 animationFrameId = requestAnimationFrame(loop); return;
             }
 
+            const { scaleX, scaleY } = canvasSize;
+            const sX = (val) => val * scaleX;
+            const sY = (val) => val * scaleY;
+            const sAvg = (val) => val * Math.min(scaleX, scaleY);
+
             handlePlayerPushLever(firePlayer);
             handlePlayerPushLever(waterPlayer);
 
@@ -422,6 +450,7 @@ export const ThirdLevel = () => {
                 let updatedMp = { ...mp };
                 if (mp.isMovingActive) {
                     let stillActive = true;
+                    // FIX: Рух платформ тепер теж в логічних одиницях.
                     if (mp.movementType === 'vertical') {
                         const prevPlatformY = mp.currentY;
                         let nextPlatformY = mp.currentY;
@@ -454,95 +483,81 @@ export const ThirdLevel = () => {
 
             [firePlayer.current, waterPlayer.current].forEach(player => {
                 if (player.onGround && player.standingOnPlatformId) {
-                    const platformPlayerIsOn = newCalculatedMovingPlatforms.find(p => p.id === player.standingOnPlatformId);
-                    if (platformPlayerIsOn) {
-                        if (platformPlayerIsOn.movementType === 'vertical' && platformDeltas.y[player.standingOnPlatformId]) {
-                            player.y += platformDeltas.y[player.standingOnPlatformId];
-                            if (platformDeltas.y[player.standingOnPlatformId] < 0 && player.velY > 0) player.velY = 0;
-                        } else if (platformPlayerIsOn.movementType === 'horizontal' && platformDeltas.x[player.standingOnPlatformId]) {
-                            player.x += platformDeltas.x[player.standingOnPlatformId];
-                        }
+                    const deltaY = platformDeltas.y[player.standingOnPlatformId];
+                    const deltaX = platformDeltas.x[player.standingOnPlatformId];
+                    if (deltaY) {
+                        player.y += deltaY;
+                        if (deltaY < 0 && player.velY > 0) player.velY = 0;
                     }
+                    if (deltaX) player.x += deltaX;
                 }
             });
 
+            // Використовуємо `setMovingPlatforms` тільки якщо є зміни, це оптимізація
             if (JSON.stringify(movingPlatforms) !== JSON.stringify(newCalculatedMovingPlatforms)) {
                 setMovingPlatforms(newCalculatedMovingPlatforms);
             }
-            
+
             handleMovement(firePlayer, newCalculatedMovingPlatforms, staticPlatforms);
             handleMovement(waterPlayer, newCalculatedMovingPlatforms, staticPlatforms);
 
-            const allPlatformsForDeathCheck = [
-                ...staticPlatforms, 
-                ...newCalculatedMovingPlatforms.map(mp => ({
-                    ...mp, 
-                    x: mp.movementType === 'horizontal' ? mp.currentX : mp.x,
-                    y: mp.movementType === 'vertical' ? mp.currentY : mp.y
-                }))
-            ];
+            // FIX: Передаємо немасштабовані платформи для перевірки смерті.
+            const allPlatformsForDeathCheck = [...staticPlatforms, ...newCalculatedMovingPlatforms];
             if (checkIfPlayerDied(firePlayer, allPlatformsForDeathCheck) || 
                 checkIfPlayerDied(waterPlayer, allPlatformsForDeathCheck)) {
                 animationFrameId = requestAnimationFrame(loop); return;
             }
 
+            // === СЕКЦІЯ МАЛЮВАННЯ: тут використовуються sX, sY, sAvg ===
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
             staticPlatforms.forEach((plat) => {
                 if (!plat.holeType) ctx.fillStyle = 'gray';
                 else if (plat.holeType === 'fire') ctx.fillStyle = 'rgba(255, 68, 0, 0.5)';
                 else if (plat.holeType === 'water') ctx.fillStyle = 'rgba(0, 8, 255, 0.5)';
-                ctx.fillRect(plat.x, plat.y, plat.width, plat.height);
+                // Зберігаємо ваш оригінальний стиль малювання
+                ctx.fillRect(sX(plat.x), sY(plat.y), sX(plat.width) + sY(1), sY(plat.height) + sY(1));;
             });
 
             newCalculatedMovingPlatforms.forEach(mp => {
-                const drawX = mp.movementType === 'horizontal' ? mp.currentX : mp.x;
-                const drawY = mp.movementType === 'vertical' ? mp.currentY : mp.y;
+                const drawX = mp.movementType === 'horizontal' ? sX(mp.currentX) : sX(mp.x);
+                const drawY = mp.movementType === 'vertical' ? sY(mp.currentY) : sY(mp.y);
                 ctx.fillStyle = mp.color;
-                ctx.fillRect(drawX, drawY, mp.width, mp.height);
-                const lineThickness = 3;
+                ctx.fillRect(drawX, drawY, sX(mp.width), sY(mp.height));
+                // ... (код малювання ліній на платформах залишається без змін)
+                const lineThickness = sAvg(3);
                 let lineColor = mp.isMovingActive ? 'rgb(255, 140, 0)' : 'rgb(255, 182, 93)';
-
-                const lineWidth = mp.width * 0.5;
-                const hLineY = drawY + mp.height / 2;
-                const hLineStartX = drawX + (mp.width - lineWidth) / 2;
-
-                if (mp.movementType === 'horizontal') {  
-                    ctx.beginPath(); ctx.moveTo(hLineStartX, hLineY); ctx.lineTo(hLineStartX + lineWidth, hLineY);
-                    ctx.strokeStyle = lineColor; ctx.lineWidth = lineThickness; ctx.stroke();
-                } else {
-                    ctx.beginPath(); 
-                    ctx.moveTo(hLineStartX, hLineY); 
-                    ctx.lineTo(hLineStartX + lineWidth, hLineY);
-                    ctx.strokeStyle = lineColor; 
-                    ctx.lineWidth = lineThickness; ctx.stroke();
-                }
-            });
-            
-            levers.forEach((lever) => {
-                const housingPadding = 3;
-                ctx.fillStyle = 'rgba(255, 182, 93, 0.7)';
-                ctx.shadowBlur = 3;
+                const lineWidth = sX(mp.width) * 0.5;
+                const hLineY = drawY + sY(mp.height) / 2;
+                const hLineStartX = drawX + (sX(mp.width) - lineWidth) / 2;
                 ctx.beginPath();
-                ctx.roundRect(
-                    lever.x - housingPadding,
-                    lever.y - housingPadding,
-                    lever.width + 2 * housingPadding,
-                    lever.height + 2 * housingPadding,
-                    4
-                );
+                ctx.moveTo(hLineStartX, hLineY);
+                ctx.lineTo(hLineStartX + lineWidth, hLineY);
+                ctx.strokeStyle = lineColor;
+                ctx.lineWidth = lineThickness;
+                ctx.stroke();
+            });
+
+            // (код малювання важелів залишається без змін, він вже використовує sX/sY)
+            levers.forEach((lever) => {
+                const housingPadding = sAvg(3);
+                ctx.fillStyle = 'rgba(255, 182, 93, 0.7)';
+                ctx.shadowBlur = sAvg(3);
+                ctx.beginPath();
+                ctx.roundRect( sX(lever.x) - housingPadding, sY(lever.y) - housingPadding, sX(lever.width) + 2 * housingPadding, sY(lever.height) + 2 * housingPadding, sAvg(4) );
                 ctx.fill();
                 ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
-                ctx.shadowBlur = 3; ctx.shadowOffsetX = 1; ctx.shadowOffsetY = 1;
+                ctx.shadowBlur = sAvg(3); ctx.shadowOffsetX = sX(1); ctx.shadowOffsetY = sY(1);
                 ctx.fill();
                 ctx.shadowColor = 'transparent';
                 ctx.fillStyle = '#455A64';
-                ctx.fillRect(lever.x, lever.y, lever.width, lever.height);
-                const handleBaseThickness = 4;
-                const handleTipThickness = 3;
-                const knobRadius = 5;
-                const handleLength = lever.height * 2.5;
-                const pivotX = lever.x + lever.width / 2;
-                const pivotY = lever.y + lever.height * 0.65;
+                ctx.fillRect(sX(lever.x), sY(lever.y), sX(lever.width), sY(lever.height));
+                const handleBaseThickness = sAvg(4);
+                const handleTipThickness = sAvg(3);
+                const knobRadius = sAvg(5);
+                const handleLength = sY(lever.height) * 2.5;
+                const pivotX = sX(lever.x) + sX(lever.width) / 2;
+                const pivotY = sY(lever.y) + sY(lever.height) * 0.65;
                 const angleDegrees = 30;
                 const angleRadians = angleDegrees * (Math.PI / 180);
                 let currentAngle;
@@ -565,7 +580,7 @@ export const ThirdLevel = () => {
                 ctx.fillStyle = 'rgb(56, 74, 82)';
                 ctx.fill();
                 ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
-                ctx.shadowBlur = 2; ctx.shadowOffsetX = 1; ctx.shadowOffsetY = 1;
+                ctx.shadowBlur = sAvg(2); ctx.shadowOffsetX = sX(1); ctx.shadowOffsetY = sY(1);
                 ctx.fill();
                 ctx.shadowColor = 'transparent';
                 ctx.beginPath();
@@ -578,23 +593,33 @@ export const ThirdLevel = () => {
                 ctx.fill();
             });
 
-           finishZones.forEach((zone) => {
-                ctx.fillStyle = zone.color; ctx.fillRect(zone.x, zone.y, zone.width, zone.height);
-                ctx.strokeStyle = 'rgb(0, 7, 212)';
-                ctx.lineWidth = 2;
-
-                if (zone.playerType === 'fire') {
-                    ctx.strokeStyle = 'rgb(255, 90, 30)';
-                }
-
-                ctx.strokeRect(zone.x, zone.y, zone.width, zone.height)
+            finishZones.forEach((zone) => {
+                ctx.fillStyle = zone.color;
+                ctx.fillRect(sX(zone.x), sY(zone.y), sX(zone.width), sY(zone.height));
+                ctx.strokeStyle = zone.playerType === 'fire' ? 'rgb(255, 90, 30)' : 'rgb(0, 7, 212)';
+                ctx.lineWidth = sAvg(2);
+                ctx.strokeRect(sX(zone.x), sY(zone.y), sX(zone.width), sY(zone.height));
             });
 
-            [firePlayer.current, waterPlayer.current].forEach((p) => { ctx.fillStyle = p.color; ctx.fillRect(p.x, p.y, p.width, p.height); });
-            
-            const fireDone = hasReachedFinish(firePlayer.current, finishZones.find(z => z.playerType === 'fire'));
-            const waterDone = hasReachedFinish(waterPlayer.current, finishZones.find(z => z.playerType === 'water'));
-            if (fireDone && waterDone && !levelDone && !gameOver) { setLevelDone(true); }
+            // FIX: Координати гравців тепер теж масштабуються під час малювання.
+            [firePlayer.current, waterPlayer.current].forEach((p) => {
+                ctx.fillStyle = p.color;
+                ctx.fillRect(sX(p.x), sY(p.y), sX(p.width), sY(p.height));
+            });
+
+            // FIX: Перевірка фінішу тепер працює з логічними координатами.
+            const fireFinishZone = finishZones.find(z => z.playerType === 'fire');
+            const waterFinishZone = finishZones.find(z => z.playerType === 'water');
+            const fireDone = fireFinishZone && hasReachedFinish(firePlayer.current, fireFinishZone);
+            const waterDone = waterFinishZone && hasReachedFinish(waterPlayer.current, waterFinishZone);
+
+            if (fireDone && waterDone && !levelDone && !gameOver) { 
+               
+                const earnedStars = calculateStars(timer);
+                setStars(earnedStars);
+                saveLevelProgress('level3', timer, earnedStars); 
+                setLevelDone(true);
+                 }
 
             animationFrameId = requestAnimationFrame(loop);
         };
@@ -607,37 +632,42 @@ export const ThirdLevel = () => {
     }, [
         gameOver, levelDone, movingPlatforms, levers, keys,
         handleMovement, checkIfPlayerDied, handlePlayerPushLever,
-        resetGame, staticPlatforms, calculateStars, formatTime, showModal
-    ]);
+        resetGame, staticPlatforms, calculateStars, formatTime, showModal, canvasSize, saveLevelProgress, timer]);
 
     return (
         <div className={styles.main} style={{ width: '100%', height: '100vh' }}>
-            <canvas ref={canvasRef} width={1100} height={700}
+            <div ref={gameContainerRef} className={styles.gameContainer}>
+            <canvas ref={canvasRef} width={canvasSize.width} height={canvasSize.height}
                 style={{
                     border: '1px solid black', display: 'block', margin: '0 auto',
                     backgroundImage: `url(${background})`, backgroundSize: 'cover'
                 }} />
             <div className={styles.timerBadge}>
-                <Link to='/'>
-                <img src={houseIconImg} alt="Home" className={styles.houseIcon} />
-                </Link> 
-                {formatTime(timer)}
-                <img src={reloadIconImg} alt="Reload" className={styles.reloadIcon} onClick={resetGame} /> 
+                <Link to='/'><img src={houseIconImg} alt="Home" className={styles.houseIcon} /></Link> 
+                <span className={styles.timer}>{formatTime(timer)} </span>
+                <img src={reloadIconImg} alt="Reload" className={styles.reloadIcon} onClick={resetGame} />
+                <img 
+                    src={isFullScreen ? exitFullScreenIcon : fullScreenIcon} 
+                    alt={isFullScreen ? "Exit Fullscreen" : "Enter Fullscreen"} 
+                    className={styles.fullscreenIcon} 
+                    onClick={toggleFullScreen} 
+                />
             </div>
             
             {gameOver && ( <div style={{ backgroundImage: `url(${bgmodal})`, backgroundSize: 'cover', backgroundPosition: 'center top -20px', width: '350px', height: '150px', textAlign: 'center', position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', padding: '20px', borderRadius: '15px' }}> 
-                <h2 className={styles.gameOver}>Game over</h2> 
+                <h2 className={styles.gameOver}>{t('level_page.game_over')}</h2> 
                 <p className={styles.gameOverMessage}>{gameOverMessage}</p>
-                 <button onClick={resetGame} className={styles.playAgain}>Play again</button> 
+                 <button onClick={resetGame} className={styles.playAgain}>{t('level_page.play_again')}</button> 
                  </div> )}
 
             {levelDone && ( <div style={{  backgroundImage: `url(${bgmodal})`, backgroundSize: 'cover', backgroundPosition: 'center top -20px', width: '350px', height: '150px', textAlign: 'center', position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', padding: '20px', borderRadius: '15px'}}> 
-                <h2 className={styles.lvlCompleted}>Level Completed!</h2>
-                <p className={styles.time}>Time: {formatTime(timer)}</p>
+                <h2 className={styles.lvlCompleted}>{t('level_page.level_completed')}</h2>
+                <p className={styles.time}>{t('main_page.time', { time: formatTime(timer) })}</p>
                 <StarsDisplay count={stars} />
-                <button onClick={resetGame} className={styles.again}>Play again</button> 
-                <button onClick={goToPreviousLevel} className={styles.previousLevel}> &laquo; </button>
+                <button onClick={resetGame} className={styles.again}>{t('level_page.play_again')}</button> 
+                <button onClick={goToPreviousLevel} className={styles.previousLevel}> « </button>
                 </div> )}
+        </div>
         </div>
     );
 };

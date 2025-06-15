@@ -1,10 +1,27 @@
 import React, { use } from 'react';
 import { Link } from 'react-router-dom';
 import { useLevelData } from '../hooks/useLevelData';
+import { useTranslation } from 'react-i18next';
 import styles from './Main.module.css';
 import bg from '../images and icons/photo_2025-06-07_12-53-48.jpg'
 import lockedIcon from '../images and icons/Lock.svg'
 import unlockedIcon from '../images and icons/Unlock.svg'
+
+
+const LanguageSwitcher = () => {
+    const { i18n } = useTranslation();
+
+    const changeLanguage = (lng) => {
+        i18n.changeLanguage(lng);
+    };
+
+    return (
+        <div className={styles.languageSwitcher}>
+            <button onClick={() => changeLanguage('en')} disabled={i18n.language === 'en'} className={styles.langBtn}>EN</button>
+            <button onClick={() => changeLanguage('uk')} disabled={i18n.language === 'uk'} className={styles.langBtnUA}>UA</button>
+        </div>
+    );
+};
 
 
 
@@ -37,6 +54,8 @@ function Main() {
     const { levelData, resetAllProgress } = useLevelData();
      console.log('Current levelData from hook:', levelData);
 
+    const { t } = useTranslation();
+
      const handleClearClick = () => {
         if (window.confirm('Are you sure you want to reset all your progress? This action cannot be undone.')) {
            resetAllProgress(); 
@@ -46,7 +65,7 @@ function Main() {
   return (
     <div>
             <img src={bg} className={styles.bg} alt="Background" />
-
+            <LanguageSwitcher/>
             <div className={styles.container}>
                 {levelsConfig.map((level, index) => {
                     // --- Етап 1: Підготовка даних ---
@@ -58,12 +77,12 @@ function Main() {
                         const prevLevelData = levelData[levelsConfig[index - 1].id];
                         if (!prevLevelData.completed) {
                             isLocked = true;
-                            // ▼▼▼ РЕДАГУЙТЕ ТУТ ▼▼▼
-                            lockMessage = 'To play here, first complete the previous level!';
+                            
+                            lockMessage = t('main_page.lock_message_prev_level');
                         } else if (prevLevelData.stars < 2) {
                             isLocked = true;
-                            // ▼▼▼ І ТУТ ▼▼▼
-                            lockMessage = 'You need 2+ stars on the previous level to unlock this one.';
+                            
+                            lockMessage = t('main_page.lock_message_stars');
                         }
                     }
 
@@ -74,8 +93,8 @@ function Main() {
                     const levelContent = (
                         <>
                             <div className={styles.levelHeader}>
-                                <h2 className={styles.levelName}>{level.name}</h2>
-                                {/* Тепер іконка рендериться завжди, просто з різним src */}
+                                <h2 className={styles.levelName}>{t('main_page.level', { number: index + 1 })}</h2>
+                                
                                 <img src={iconSrc} alt={isLocked ? "Locked" : "Unlocked"} className={styles.lockIcon} />
                             </div>
 
@@ -84,11 +103,11 @@ function Main() {
                                 <p className={styles.lockMessage}>{lockMessage}</p>
                             ) : data.completed ? (
                                 <div className={styles.levelInfo}>
-                                    <p className={styles.timer}>Time: {formatTime(data.time)}</p>
+                                    <p className={styles.timer}>{t('main_page.time', { time: formatTime(data.time) })}</p>
                                     <StarsDisplay count={data.stars} />
                                 </div>
                             ) : (
-                                <p className={styles.startText}>Lets done it!</p>
+                                <p className={styles.startText}>{t('main_page.start_text')}</p>
                             )}
                         </>
                     );
@@ -120,7 +139,7 @@ function Main() {
                 })}
             </div>
 
-            <button onClick={handleClearClick} className={styles.clearBtn}>Clear Results</button>
+            <button onClick={handleClearClick} className={styles.clearBtn}>{t('main_page.clear_results')}</button>
         </div>
     );
 }

@@ -1,0 +1,19 @@
+{
+  "main_page": {
+    "level": "Level {{number}}",
+    "lock_message_prev_level": "To play here, first complete the previous level!",
+    "lock_message_stars": "You need 2+ stars on the previous level to unlock this one.",
+    "start_text": "Let's do it!",
+    "time": "Time: {{time}}",
+    "clear_results": "Clear Results",
+    "confirm_reset": "Are you sure you want to reset all your progress? This action cannot be undone."
+  },
+  "level_page": {
+    "game_over": "Game over",
+    "player_perished": "Player {{playerType}} perished!",
+    "player_fell_off": "Player {{playerType}} fell off!",
+    "play_again": "Play again",
+    "level_completed": "Level Completed!",
+    "next_level": "»"
+  }
+}

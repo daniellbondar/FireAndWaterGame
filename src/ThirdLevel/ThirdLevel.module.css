@@ -39,36 +39,51 @@
 }
 
 .timerBadge {
-    position: relative;
-    top: -701px;
-    left: 44%;
+    position: absolute;
+    top: 0%;
+    left: 45%;
     background: linear-gradient(to top, rgb(26, 26, 26)8%, rgb(70, 70, 70) 60%);
     color: white;
     padding: 5px 30px;
-    width: 120px;
+    width: 10%;
     
     font-weight: bold;
     clip-path: polygon(0 0, 100% 0, 85% 100%, 15% 100%);
     border-radius: 0 0 25px 25px;
     z-index: 30;
-    text-align: center;
+    
+}
+
+.timerBadge span {
+    position: relative;
+    left: 30%;
 }
 
 .reloadIcon {
     cursor: pointer;
     position: absolute;
-    top: 2px;
-    right: 30px;
-    width: 25px;
+    top: 3%;
+    right: 15%;
+    width: 12%;
 
 }
 
 .houseIcon {
     cursor: pointer;
     position: absolute;
-    top: 2px;
-    left: 30px;
-    width: 25px;
+    top: 3%;
+    left: 15%;
+    width: 12%;
+}
+
+
+
+.fullscreenIcon {
+    cursor: pointer;
+    position: absolute;
+    top: 10%;
+    left: 60%;
+    width: 11%;
 }
 
 
@@ -163,22 +178,24 @@ text-shadow: rgb(149, 149, 149) 1px 1px 0px;
 .modalStarsContainer {
     position: relative;
     display: flex; 
-    justify-content: center;
+    justify-content: center; /* Це залишаємо, щоб весь блок був по центру */
     gap: 5px;
     margin: -3px 0;
     font-size: 1.7rem;
+    left: 34%;
+    /* FIX: Додаємо ширину, щоб дочірні абсолютні елементи мали до чого прив'язатися */
+    /* Розраховуємо ширину: (розмір шрифту * кількість зірок) + (відступ * (кількість зірок - 1)) */
+    /* Це приблизний розрахунок, можливо, доведеться підібрати значення. */
+    width: fit-content; /* Найкращий варіант - ширина по контенту */
 }
 
-    .starsBackground {
-    
+.starsBackground {
     display: contents; 
 }
-
 
 .modalStarPlaceholder {
     opacity: 0.2; 
 }
-
 
 .starsForeground {
     position: absolute; 
@@ -187,25 +204,19 @@ text-shadow: rgb(149, 149, 149) 1px 1px 0px;
     width: 100%;
     height: 100%;
     
-    
     display: flex;
-    justify-content: center;
+    /* FIX: Змінюємо justify-content на flex-start! */
+    /* Тепер зірки будуть з'являтися зліва направо, заповнюючи перші доступні місця. */
+    justify-content: flex-start;
     gap: 5px;
 }
 
-
 .modalStarActive {
-    
     opacity: 0;
     transform: scale(0);
-
-    
     animation: starPopIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-
-    
     filter: drop-shadow(0 0 5px gold);
 }
-
 
 @keyframes starPopIn {
     0% {
@@ -222,4 +233,153 @@ text-shadow: rgb(149, 149, 149) 1px 1px 0px;
     }
 }
 
+@media (min-width: 1280px) {
 
+    .gameOver{
+        font-size: 35px;
+    }
+
+    .gameOverMessage{
+        padding-top: 15px;
+        font-size: 20px;
+    }
+
+    .playAgain{
+        left: 130px
+    }
+
+    
+    
+}
+
+@media (min-width: 1920px) {
+
+    .gameOver{
+        font-size: 35px;
+    }
+
+    .gameOverMessage{
+        padding-top: 15px;
+        font-size: 25px;
+    }
+
+    .playAgain{
+        left: 200px
+    }
+
+    .reloadIcon{
+        width: 10%;
+    }
+
+    .houseIcon{
+        width: 10%;
+    }
+
+    .fullscreenIcon{
+        width: 10%;
+        top: 2.5%;
+    }
+    
+}
+
+@media (min-width: 2560px) {
+
+    .playAgain{
+        left: 255px;
+        width: 180px;
+    }
+
+    .reloadIcon{
+        width: 9%;
+        top: 1%;
+    }
+
+    .houseIcon{
+        width: 9%;
+    }
+
+    .fullscreenIcon{
+        width: 9%;
+        top: 2.5%;
+    }
+    
+}
+
+@media (min-width: 2560px) {
+
+    .gameOver{
+        font-size: 40px;
+    }
+
+    .gameOverMessage{
+        padding-top: 10px;
+        font-size: 30px;
+    }
+
+    .playAgain{
+        left: 255px;
+        width: 190px;
+        font-size: 18px;
+    }
+
+    
+    
+}
+
+
+@media (min-width: 3440px) {
+
+    .timerBadge {
+        padding: 15px 25px;
+    }
+
+    .timerBadge span{
+        font-size: 25px;
+        left: 35%;
+    }
+    
+
+    .playAgain{
+        left: 360px;
+        width: 190px;
+        font-size: 18px;
+    }
+
+    .reloadIcon{
+        width: 11%;
+        top: 10%;
+    }
+
+    .houseIcon{
+        width: 11%;
+        top: 10%;
+    }
+
+    .fullscreenIcon{
+        width: 10%;
+        top: 15%;
+    }
+
+    
+    
+}
+
+
+@media (min-width: 3440px) {
+
+    .playAgain {
+        left: 370px;
+        width: 250px;
+        height: 40px;
+        border-radius: 10px;
+    }
+
+    .gameOver{
+        font-size: 45px;
+    }
+
+    .gameOverMessage{
+        padding-top: 2px;
+        font-size: 35px;
+    }
+    }
