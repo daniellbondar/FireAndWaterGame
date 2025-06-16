@@ -18,7 +18,7 @@ const DESIGN_HEIGHT = 700;
 
 const StarsDisplay = ({ count }) => (
     <div className={styles.modalStarsContainer}>
-        {/* 1. Фонові (тьмяні) зірки - вони завжди статичні */}
+        
         <div className={styles.starsBackground}>
             {[...Array(3)].map((_, i) => (
                 <span key={`bg-${i}`} className={styles.modalStarPlaceholder}>
@@ -27,7 +27,7 @@ const StarsDisplay = ({ count }) => (
             ))}
         </div>
 
-        {/* 2. Активні (яскраві) зірки - з'являються з анімацією поверх фонових */}
+        
         <div className={styles.starsForeground}>
             {[...Array(count)].map((_, i) => (
                 <span 
@@ -56,12 +56,12 @@ export const TestLevel = () => {
     const navigate = useNavigate();
     const [isFullScreen, setIsFullScreen] = useState(false);
 
-    const gameContainerRef = useRef(null); // Ref для головного контейнера гри
+    const gameContainerRef = useRef(null); 
 
    const { t } = useTranslation();
     
     
-    // Замініть ваш старий useState для canvasSize на цей
+   
     const [canvasSize, setCanvasSize] = useState({
         width: DESIGN_WIDTH, 
         height: DESIGN_HEIGHT, 
@@ -78,17 +78,17 @@ export const TestLevel = () => {
         navigate('/level2'); 
     };
 
-    const gravity = 0.4; // Original gravity
-    const jumpForce = -10; // Original jumpForce
-    const speed = 4;     // Original speed
+    const gravity = 0.4; 
+    const jumpForce = -10; 
+    const speed = 4;     
 
-    // Static Platforms (including holes)
+    
     const [staticPlatforms, setStaticPlatforms] = useState([
         { x: 0, y: 680, width: 313, height: 20 },
         { x: 412, y: 680, width: 100, height: 10 },
         { x: 612, y: 680, width: 100, height: 10 },
         { x: 812, y: 680, width: 300, height: 10 },
-        { x: 300, y: 690, width: 940, height: 10 }, // Main ground
+        { x: 300, y: 690, width: 940, height: 10 }, 
         { x: 313, y: 681, width: 99, height: 9, holeType: 'fire' },
         { x: 513, y: 681, width: 99, height: 9, holeType: 'water' },
         { x: 712, y: 681, width: 100, height: 9, holeType: 'fire' },
@@ -124,7 +124,7 @@ export const TestLevel = () => {
         { x: 150, y: 130, width: 80, height: 10 },
         { x: 150, y: 121, width: 80, height: 9, holeType: 'fire' },
         { x: 230, y: 110, width: 75, height: 10 },
-        // Original ID 36 platform - { id: 36, x: 230, y: 120, width: 670, height: 20 }, (Removed ID as it's static)
+        
         { x: 230, y: 120, width: 670, height: 20 },
 
 
@@ -141,30 +141,30 @@ export const TestLevel = () => {
     // Moving Platforms
     const initialMovingPlatforms = [
         {
-            id: 40, // Original ID
+            id: 40, 
             x: 285,
-            initialY: 0, // The y-coordinate where it starts or resets to (one end of its range)
-            currentY: 0, // Its current y-coordinate
+            initialY: 0, 
+            currentY: 0, 
             width: 20,
             height: 60,
-            isMovingActive: false, // Equivalent to original 'activate'
-            // 'directionIsDown' from original 'goingDown': true means moves towards range.to, false towards range.from
-            directionIsDown: true, // As per original: `goingDown: true` (вниз)
-            range: { from: 0, to: 60 }, // from: upper Y limit, to: lower Y limit
+            isMovingActive: false, 
+            
+            directionIsDown: true, 
+            range: { from: 0, to: 60 }, 
             speed: 1,
-            color: 'gray' // Added color for drawing
+            color: 'gray' 
         }
     ];
     const [movingPlatforms, setMovingPlatforms] = useState(initialMovingPlatforms);
 
     // Levers
     const initialLevers = [
-        { // Верхній важіль
+        { 
         id: 1,
         x: 70, y: 110,
         width: 25, height: 10,
-        activated: false, // false = ручка в початковому нахилі, true = в протилежному
-        initialTiltDirection: 'right', // Початково нахилений праворуч
+        activated: false, 
+        initialTiltDirection: 'right', 
         activatesPlatformId: 40,
         lastActivationTime: 0
     },
@@ -173,7 +173,7 @@ export const TestLevel = () => {
         x: 800, y: 220,
         width: 25, height: 10,
         activated: false,
-        initialTiltDirection: 'left', // Початково нахилений ліворуч
+        initialTiltDirection: 'left', 
         activatesPlatformId: 40,
         lastActivationTime: 0
     }
@@ -181,7 +181,7 @@ export const TestLevel = () => {
     ];
     const [levers, setLevers] = useState(initialLevers);
 
-    const groundY = staticPlatforms; // Based on canvas height and typical ground placement
+    const groundY = staticPlatforms; 
 
     const formatTime = useCallback((time) => {
         const minutes = Math.floor(time / 60);
@@ -201,19 +201,19 @@ export const TestLevel = () => {
             for (let entry of entries) {
                 const { width: containerWidth, height: containerHeight } = entry.contentRect;
 
-                // 1. Розраховуємо коефіцієнт масштабування по ширині
+               
                 const scaleX = containerWidth / DESIGN_WIDTH;
-                // 2. Розраховуємо коефіцієнт масштабування по висоті
+                
                 const scaleY = containerHeight / DESIGN_HEIGHT;
 
-                // 3. ОБИРАЄМО НАЙМЕНШИЙ коефіцієнт. Це гарантує, що canvas впишеться повністю.
+               
                 const scale = Math.min(scaleX, scaleY);
 
-                // 4. Розраховуємо нові розміри canvas на основі цього єдиного коефіцієнта
+               
                 const newCanvasWidth = DESIGN_WIDTH * scale;
                 const newCanvasHeight = DESIGN_HEIGHT * scale;
 
-                // 5. Оновлюємо стан. Зверніть увагу, scaleX і scaleY тепер однакові.
+                
                 setCanvasSize({
                     width: newCanvasWidth,
                     height: newCanvasHeight,
@@ -228,15 +228,15 @@ export const TestLevel = () => {
 
     }, [isFullScreen]);
 
-    // Ефект для відстеження стану повноекранного режиму
+    
      useEffect(() => {
         const handleFullScreenChange = () => {
             const isNowFullScreen = !!document.fullscreenElement;
             setIsFullScreen(isNowFullScreen);
 
-            // ЯКЩО МИ ВИЙШЛИ з повноекранного режиму
+            
             if (!isNowFullScreen) {
-                // Примусово повертаємо canvas до фіксованого розміру
+                
                 setCanvasSize({
                     width: DESIGN_WIDTH,
                     height: DESIGN_HEIGHT,
@@ -244,14 +244,14 @@ export const TestLevel = () => {
                     scaleY: 1,
                 });
             }
-            // Якщо ми увійшли в повноекранний режим, то ResizeObserver сам встановить потрібний розмір.
+            
         };
 
         document.addEventListener('fullscreenchange', handleFullScreenChange);
         return () => document.removeEventListener('fullscreenchange', handleFullScreenChange);
     }, []);
 
-    // Функція для перемикання повноекранного режиму
+    
     const toggleFullScreen = () => {
         if (!document.fullscreenElement) {
             gameContainerRef.current?.requestFullscreen();
@@ -277,7 +277,7 @@ export const TestLevel = () => {
     const calculateStars = useCallback((time) => {
         if (time <= 40) return 3;
         if (time > 40 && time <= 60) return 2;
-        if (time > 60) return 1; // Original said > 80, not > 60 & <= 80
+        if (time > 60) return 1; 
         
     }, []);
 
@@ -345,15 +345,15 @@ export const TestLevel = () => {
         waterPlayer.current.onGround = false;
         waterPlayer.current.standingOnPlatformId = null;
         
-        setLevers(initialLevers.map(l => ({...l, activated: false}))); // Reset levers
-        setMovingPlatforms(initialMovingPlatforms.map(mp => ({ // Reset moving platforms
+        setLevers(initialLevers.map(l => ({...l, activated: false}))); 
+        setMovingPlatforms(initialMovingPlatforms.map(mp => ({ 
             ...mp, 
             currentY: mp.initialY, 
             isMovingActive: false,
-            // directionIsDown: true // Or its original initial direction if different per platform
+            
         })));
 
-    }, []); // Removed initialLevers, initialMovingPlatforms from deps, they are stable if defined outside
+    }, []); 
 
 
     const finishZones = [
@@ -385,8 +385,8 @@ export const TestLevel = () => {
                 if (plat.id === platformIdToActivate) {
                     return {
                         ...plat,
-                        isMovingActive: true, // Start movement
-                        directionIsDown: !plat.directionIsDown // Toggle its inherent direction for this movement cycle
+                        isMovingActive: true, 
+                        directionIsDown: !plat.directionIsDown 
                     };
                 }
                 return plat;
@@ -395,11 +395,11 @@ export const TestLevel = () => {
         setLevers(prevLevers =>
             prevLevers.map(lever =>
                 lever.id === leverIdToToggle
-                    ? { ...lever, activated: !lever.activated } // Toggle visual state of the lever
+                    ? { ...lever, activated: !lever.activated } 
                     : lever
             )
         );
-    }, [setMovingPlatforms, setLevers]); // Dependencies
+    }, [setMovingPlatforms, setLevers]); 
 
     const handlePlayerPushLever = useCallback((playerRef) => {
 
@@ -410,7 +410,7 @@ export const TestLevel = () => {
 
 
         setLevers(prevLevers => {
-        let stateActuallyChanged = false; // Прапорець, чи дійсно щось змінилося
+        let stateActuallyChanged = false; 
 
         const updatedLevers = prevLevers.map(lever => {
             const playerRect = { x: player.x, y: player.y, width: player.width, height: player.height };
@@ -424,12 +424,10 @@ export const TestLevel = () => {
             ) {
                 // Перевірка Cooldown
                 if (currentTime - lever.lastActivationTime < leverCooldownMs) {
-                    return lever; // Нічого не робимо, cooldown
+                    return lever; 
                 }
 
-                // Якщо дійшли сюди, cooldown минув і є колізія.
-                // Тепер важливо: ми ОДРАЗУ викликаємо setMovingPlatforms.
-                // І одразу ж оновлюємо стан важеля.
+                
 
                 
 setMovingPlatforms(prevMovingPlats =>
@@ -437,15 +435,14 @@ setMovingPlatforms(prevMovingPlats =>
         if (plat.id === lever.activatesPlatformId) {
             let newDirectionIsDown = !plat.directionIsDown;
             
-            // ЯКЩО ЦЕ ПЕРША АКТИВАЦІЯ ПІСЛЯ ТОГО, ЯК ПЛАТФОРМА БУЛА НЕАКТИВНА
-            // І ВОНА ЗНАХОДИТЬСЯ НА ОДНІЙ З МЕЖ
-            if (!plat.isMovingActive) { // Якщо платформа була неактивна
+            
+            if (!plat.isMovingActive) { 
                 if (plat.currentY <= plat.range.from && !newDirectionIsDown) {
-                    // Платформа на верхній межі, і новий напрямок теж вгору -> примусово вниз
+                    
                     console.log(`Platform ${plat.id} was at top, forcing down.`);
                     newDirectionIsDown = true;
                 } else if (plat.currentY >= plat.range.to && newDirectionIsDown) {
-                    // Платформа на нижній межі, і новий напрямок теж вниз -> примусово вгору
+                    
                     console.log(`Platform ${plat.id} was at bottom, forcing up.`);
                     newDirectionIsDown = false;
                 }
@@ -462,22 +459,21 @@ setMovingPlatforms(prevMovingPlats =>
     })
 );
                 
-                stateActuallyChanged = true; // Позначаємо, що стан змінився
+                stateActuallyChanged = true; 
                 return {
                     ...lever,
-                    activated: !lever.activated, // Переключаємо стан важеля
+                    activated: !lever.activated, 
                     lastActivationTime: currentTime
                 };
             }
-            return lever; // Повертаємо важіль без змін, якщо не було колізії або cooldown
+            return lever; 
         });
 
-        // Повертаємо оновлений масив ТІЛЬКИ якщо щось дійсно змінилося,
-        // щоб уникнути зайвих ре-рендерів.
+        
         if (stateActuallyChanged) {
             return updatedLevers;
         }
-        return prevLevers; // Повертаємо старий масив, якщо нічого не змінилося
+        return prevLevers; 
     });
 }, [setLevers, setMovingPlatforms]);
 
@@ -510,7 +506,7 @@ setMovingPlatforms(prevMovingPlats =>
 
         const allPlatformsForCollision = [
             
-            ...currentStaticPlatforms.filter(p => !p.holeType), // Solid static platforms
+            ...currentStaticPlatforms.filter(p => !p.holeType), 
             ...currentFrameMovingPlatforms.map(mp => ({
                 id: mp.id, x: mp.x, y: mp.currentY, width: mp.width, height: mp.height, isMoving: true
             }))
@@ -544,8 +540,8 @@ setMovingPlatforms(prevMovingPlats =>
             
             const isPlayerVerticallyWithinPlat = player.y + player.height > plat.y + 1 && player.y < plat.y + plat.height -1; // +1 / -1 to avoid re-triggering from landing logic
             if (isPlayerVerticallyWithinPlat) {
-                 const wasPlayerLeftOfPlat = prevX + player.width <= plat.x + 1; // Small tolerance
-                 const wasPlayerRightOfPlat = prevX >= plat.x + plat.width -1; // Small tolerance
+                 const wasPlayerLeftOfPlat = prevX + player.width <= plat.x + 1; 
+                 const wasPlayerRightOfPlat = prevX >= plat.x + plat.width -1; 
                  const isCurrentlyCollidingHorizontally = player.x + player.width > plat.x && player.x < plat.x + plat.width;
 
                  if (wasPlayerLeftOfPlat && isCurrentlyCollidingHorizontally) {
@@ -561,18 +557,18 @@ setMovingPlatforms(prevMovingPlats =>
         else if (landedOnStaticThisFrame) player.standingOnPlatformId = null;
         else if (!player.onGround) player.standingOnPlatformId = null;
 
-        // Collision with canvas bottom (groundY)
-        const mainGroundPlatform = currentStaticPlatforms.find(p => p.y === 690 && p.width === 940); // Example of finding the main ground
+        
+        const mainGroundPlatform = currentStaticPlatforms.find(p => p.y === 690 && p.width === 940); 
         const effectiveGroundY = mainGroundPlatform ? mainGroundPlatform.y : groundY;
 
         
 
 
         if (player.y + player.height > effectiveGroundY) {
-             // Check if player is over a hole in the main ground
+             
             let onHole = false;
             currentStaticPlatforms.forEach(plat => {
-                if (plat.holeType && plat.y + plat.height >= effectiveGroundY) { // Check holes at ground level
+                if (plat.holeType && plat.y + plat.height >= effectiveGroundY) { 
                      if (player.x < plat.x + plat.width && player.x + player.width > plat.x) {
                         onHole = true;
                      }
@@ -590,17 +586,17 @@ setMovingPlatforms(prevMovingPlats =>
         
 
 
-    }, [keys, gravity, jumpForce, speed, groundY]); // groundY might need to be dynamic if level changes
+    }, [keys, gravity, jumpForce, speed, groundY]); 
 
     const checkIfPlayerDied = useCallback((playerRef, currentAllPlatforms) => {
         const player = playerRef.current;
-        for (let plat of currentAllPlatforms) { // Check against all platforms that might be holes
+        for (let plat of currentAllPlatforms) { 
             if (plat.holeType && plat.holeType !== player.playerType) {
                 if (player.x < plat.x + plat.width && player.x + player.width > plat.x &&
                     player.y < plat.y + plat.height && player.y + player.height > plat.y) {
                     setGameOver(true); 
                     setGameOverMessage(t('level_page.player_perished', { playerType: player.playerType }));
-                    setTimer(0); // Reset timer on death as per original
+                    setTimer(0); 
                     return true;
                 }
             }
@@ -613,7 +609,7 @@ setMovingPlatforms(prevMovingPlats =>
              return true;
         }
         return false;
-    }, [setGameOver, setGameOverMessage, setTimer]); // Added setTimer dependency
+    }, [setGameOver, setGameOverMessage, setTimer]); 
 
     useEffect(() => {
         const handleKeyDown = (e) => {
@@ -631,10 +627,7 @@ setMovingPlatforms(prevMovingPlats =>
         let animationFrameId;
         const loop = () => {
             if (gameOver || levelDone) {
-                // If the game is over or done, we stop updating logic but keep the loop running to not clear the canvas.
-                // However, if we want to show a modal, we should stop the loop entirely. Let's adjust this.
-                // The state change will stop the loop correctly in the useEffect dependencies.
-                // We'll just make sure not to request a new frame if we're done.
+                
                 return;
             }
             const canvas = canvasRef.current;
@@ -643,18 +636,17 @@ setMovingPlatforms(prevMovingPlats =>
                 animationFrameId = requestAnimationFrame(loop); return;
             }
 
-            // --- ADAPTATION HELPERS ---
+            
             const { scaleX, scaleY } = canvasSize;
             const sX = (val) => val * scaleX;
             const sY = (val) => val * scaleY;
             const sAvg = (val) => val * Math.min(scaleX, scaleY);
 
-            // --- LOGIC (UNCHANGED, USES ORIGINAL COORDINATES) ---
-            // 1. Handle Player-Lever Interaction
+            
             handlePlayerPushLever(firePlayer);
             handlePlayerPushLever(waterPlayer);
 
-            // 2. Calculate New Moving Platform Positions
+            
             const platformDeltas = {};
             const newCalculatedMovingPlatforms = movingPlatforms.map(mp => {
                 let updatedMp = { ...mp };
@@ -676,7 +668,7 @@ setMovingPlatforms(prevMovingPlats =>
                 return updatedMp;
             });
             
-            // 3. Pre-Adjust Player Position on Moving Platforms
+            
             [firePlayer.current, waterPlayer.current].forEach(player => {
                 if (player.onGround && player.standingOnPlatformId) {
                     const deltaY = platformDeltas[player.standingOnPlatformId];
@@ -684,25 +676,25 @@ setMovingPlatforms(prevMovingPlats =>
                 }
             });
 
-            // 4. Update React state for moving platforms
+            
             if (JSON.stringify(movingPlatforms) !== JSON.stringify(newCalculatedMovingPlatforms)) {
                 setMovingPlatforms(newCalculatedMovingPlatforms);
             }
             
-            // 5. Handle Player Movement & Collisions
+            
             const allPlatformsForDeathCheck = [...staticPlatforms, ...newCalculatedMovingPlatforms.map(mp => ({...mp, y: mp.currentY}))];
             handleMovement(firePlayer, newCalculatedMovingPlatforms, staticPlatforms);
             handleMovement(waterPlayer, newCalculatedMovingPlatforms, staticPlatforms);
 
-            // 6. Check if Players Died
+            
             if (checkIfPlayerDied(firePlayer, allPlatformsForDeathCheck) || checkIfPlayerDied(waterPlayer, allPlatformsForDeathCheck)) {
-                // State change will handle the loop stop
+               
             }
 
-            // --- DRAWING (MODIFIED TO USE SCALING) ---
+            
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Static Platforms & Holes
+            // static platforms and holes
             staticPlatforms.forEach((plat) => {
                 if (!plat.holeType) ctx.fillStyle = 'gray';
                 else if (plat.holeType === 'fire') ctx.fillStyle = 'rgba(255, 68, 0, 0.5)';
@@ -815,13 +807,13 @@ setMovingPlatforms(prevMovingPlats =>
                 ctx.strokeRect(sX(zone.x), sY(zone.y), sX(zone.width), sY(zone.height));
             });
 
-            // Players
+            
             [firePlayer.current, waterPlayer.current].forEach((p) => {
                 ctx.fillStyle = p.color; 
                 ctx.fillRect(sX(p.x), sY(p.y), sX(p.width), sY(p.height));
             });
             
-            // Win condition
+            
             const fireDone = hasReachedFinish(firePlayer.current, finishZones.find(z => z.playerType === 'fire'));
             const waterDone = hasReachedFinish(waterPlayer.current, finishZones.find(z => z.playerType === 'water'));
             if (fireDone && waterDone && !levelDone && !gameOver) {
@@ -845,7 +837,7 @@ setMovingPlatforms(prevMovingPlats =>
             cancelAnimationFrame(animationFrameId);
         };
     }, [
-        gameOver, levelDone, staticPlatforms, movingPlatforms, levers, keys, // Core state and interaction
+        gameOver, levelDone, staticPlatforms, movingPlatforms, levers, keys, 
         handleMovement, checkIfPlayerDied, handlePlayerPushLever, activateLeveredPlatform, saveLevelProgress, calculateStars, timer, setNextLevelUnlocked]);
 
 
@@ -866,7 +858,7 @@ setMovingPlatforms(prevMovingPlats =>
                 <span className={styles.timer}>{formatTime(timer)} </span>
                 <img src={reloadIconImg} alt="Reload" className={styles.reloadIcon} onClick={resetGame} />
                 {isFullScreen ? (
-    // Якщо ми ВЖЕ в повноекранному режимі, показуємо іконку "Вийти"
+    
     <img 
         src={exitFullScreenIcon} 
         alt="Exit Fullscreen" 
@@ -874,7 +866,7 @@ setMovingPlatforms(prevMovingPlats =>
         onClick={toggleFullScreen} 
     />
 ) : (
-    // Якщо ми НЕ в повноекранному режимі, показуємо іконку "Увійти"
+    
     <img 
         src={fullScreenIcon} 
         alt="Enter Fullscreen" 
@@ -884,7 +876,7 @@ setMovingPlatforms(prevMovingPlats =>
 )}
             </div>
 
-            {/* Removed direct rendering of platforms/finish zones as divs, canvas handles it */}
+            
 
             {gameOver && (
                 <div style={{

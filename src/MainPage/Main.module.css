@@ -42,11 +42,11 @@
 }
 
 .levelHeader {
-    display: flex;         /* Включаємо Flexbox */
-    align-items: center;   /* Вирівнюємо по вертикалі */
-    justify-content: center; /* Центруємо по горизонталі */
-    gap: 10px;             /* Відстань між назвою та іконкою */
-    width: 100%;           /* Займаємо всю ширину картки */
+    display: flex;         
+    align-items: center;  
+    justify-content: center; 
+    gap: 10px;             
+    width: 100%;          
 }
 
 .levelInfo {
@@ -92,15 +92,14 @@ font-weight: 700;
 }
 
 .starFilled {
-    /* Цей клас можна залишити порожнім, якщо вас влаштовує стандартний вигляд емодзі */
-    /* Або можна додати тінь чи інший ефект */
+    
     opacity: 1;
-    filter: drop-shadow(0 0 2px gold); /* Додає легке світіння */
+    filter: drop-shadow(0 0 2px gold); 
     transition: opacity 0.3s ease;
 }
 
 .starEmpty {
-    /* Робимо "порожню" зірку напівпрозорою, щоб вона виглядала неактивною */
+    
     opacity: 0.3;
     transition: opacity 0.3s ease;
 }

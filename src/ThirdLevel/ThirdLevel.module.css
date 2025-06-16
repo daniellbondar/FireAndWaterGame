@@ -178,15 +178,13 @@ text-shadow: rgb(149, 149, 149) 1px 1px 0px;
 .modalStarsContainer {
     position: relative;
     display: flex; 
-    justify-content: center; /* Це залишаємо, щоб весь блок був по центру */
+    justify-content: center; 
     gap: 5px;
     margin: -3px 0;
     font-size: 1.7rem;
     left: 34%;
-    /* FIX: Додаємо ширину, щоб дочірні абсолютні елементи мали до чого прив'язатися */
-    /* Розраховуємо ширину: (розмір шрифту * кількість зірок) + (відступ * (кількість зірок - 1)) */
-    /* Це приблизний розрахунок, можливо, доведеться підібрати значення. */
-    width: fit-content; /* Найкращий варіант - ширина по контенту */
+    
+    width: fit-content; 
 }
 
 .starsBackground {
@@ -205,8 +203,7 @@ text-shadow: rgb(149, 149, 149) 1px 1px 0px;
     height: 100%;
     
     display: flex;
-    /* FIX: Змінюємо justify-content на flex-start! */
-    /* Тепер зірки будуть з'являтися зліва направо, заповнюючи перші доступні місця. */
+    
     justify-content: flex-start;
     gap: 5px;
 }

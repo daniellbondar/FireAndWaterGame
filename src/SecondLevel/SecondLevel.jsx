@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react'; // Added useCallback
+import React, { useEffect, useRef, useState, useCallback } from 'react'; 
 import { Link, useNavigate } from 'react-router-dom';
 import { useLevelData } from '../hooks/useLevelData';
 import { useTranslation } from 'react-i18next';
@@ -10,15 +10,14 @@ import house from '../images and icons/Outline.svg'
 import fullScreenIcon from '../images and icons/Full_alt.svg'
 import exitFullScreenIcon from '../images and icons/Reduce.svg'
 
-// import fire from '../images and icons/fireIcon.png' // Assuming you might use these later
-// import water from '../images and icons/waterIcon.png'
+
 
 const DESIGN_WIDTH = 1100;
 const DESIGN_HEIGHT = 700;
 
 const StarsDisplay = ({ count }) => (
     <div className={styles.modalStarsContainer}>
-        {/* 1. Фонові (тьмяні) зірки - вони завжди статичні */}
+        
         <div className={styles.starsBackground}>
             {[...Array(3)].map((_, i) => (
                 <span key={`bg-${i}`} className={styles.modalStarPlaceholder}>
@@ -27,7 +26,7 @@ const StarsDisplay = ({ count }) => (
             ))}
         </div>
 
-        {/* 2. Активні (яскраві) зірки - з'являються з анімацією поверх фонових */}
+        
         <div className={styles.starsForeground}>
             {[...Array(count)].map((_, i) => (
                 <span 
@@ -83,13 +82,13 @@ export const TestLevel = () => {
         navigate('/level1')
     }
 
-    // const [leverActivated, setLeverActivated] = useState(false); // Not used in this request
+    
 
     const gravity = 0.4;
     const jumpForce = -10;
     const speed = 4;
 
-    // --- NEW STATE FOR BUTTONS AND MOVING PLATFORMS ---
+    
     const [buttons, setButtons] = useState([
         { id: 'button1', x: 150, y: 200, width: 60, height: 10, originalY: 670, pressedYOffset: 5, isPressed: false, color: 'rgb(255, 140, 0)', pressedColor: 'rgb(146, 80, 0)' },
         { id: 'button2', x: 20, y: 230, width: 60, height: 10, originalY: 230, pressedYOffset: 5, isPressed: false, color: 'rgb(255, 140, 0)', pressedColor: 'rgb(146, 80, 0)' },
@@ -100,10 +99,10 @@ export const TestLevel = () => {
         { id: 'mp2', x: 150, y: 370, width: 130, height: 20, originalY: 370, targetY: 260, currentY: 370, moveSpeed: 0.5, color: 'gray' },
     ]);
     const [anyButtonPressed, setAnyButtonPressed] = useState(false);
-    // --- END NEW STATE ---
+    
 
 
-    const [staticPlatforms, setStaticPlatforms] = useState([ // Renamed for clarity
+    const [staticPlatforms, setStaticPlatforms] = useState([ 
         { x: -20, y: -50, width: 20, height: 750 }, 
         { x: 1100, y: 0, width: 20, height: 700 }, 
 
@@ -169,19 +168,19 @@ export const TestLevel = () => {
                 for (let entry of entries) {
                     const { width: containerWidth, height: containerHeight } = entry.contentRect;
     
-                    // 1. Розраховуємо коефіцієнт масштабування по ширині
+                    
                     const scaleX = containerWidth / DESIGN_WIDTH;
-                    // 2. Розраховуємо коефіцієнт масштабування по висоті
+                    
                     const scaleY = containerHeight / DESIGN_HEIGHT;
     
-                    // 3. ОБИРАЄМО НАЙМЕНШИЙ коефіцієнт. Це гарантує, що canvas впишеться повністю.
+                    
                     const scale = Math.min(scaleX, scaleY);
     
-                    // 4. Розраховуємо нові розміри canvas на основі цього єдиного коефіцієнта
+                    
                     const newCanvasWidth = DESIGN_WIDTH * scale;
                     const newCanvasHeight = DESIGN_HEIGHT * scale;
     
-                    // 5. Оновлюємо стан. Зверніть увагу, scaleX і scaleY тепер однакові.
+                    
                     setCanvasSize({
                         width: newCanvasWidth,
                         height: newCanvasHeight,
@@ -196,15 +195,15 @@ export const TestLevel = () => {
     
         }, [isFullScreen]);
     
-        // Ефект для відстеження стану повноекранного режиму
+       
          useEffect(() => {
             const handleFullScreenChange = () => {
                 const isNowFullScreen = !!document.fullscreenElement;
                 setIsFullScreen(isNowFullScreen);
     
-                // ЯКЩО МИ ВИЙШЛИ з повноекранного режиму
+                
                 if (!isNowFullScreen) {
-                    // Примусово повертаємо canvas до фіксованого розміру
+                    
                     setCanvasSize({
                         width: DESIGN_WIDTH,
                         height: DESIGN_HEIGHT,
@@ -212,14 +211,14 @@ export const TestLevel = () => {
                         scaleY: 1,
                     });
                 }
-                // Якщо ми увійшли в повноекранний режим, то ResizeObserver сам встановить потрібний розмір.
+                
             };
     
             document.addEventListener('fullscreenchange', handleFullScreenChange);
             return () => document.removeEventListener('fullscreenchange', handleFullScreenChange);
         }, []);
     
-        // Функція для перемикання повноекранного режиму
+        
         const toggleFullScreen = () => {
             if (!document.fullscreenElement) {
                 gameContainerRef.current?.requestFullscreen();
@@ -232,7 +231,7 @@ export const TestLevel = () => {
 
     useEffect(() => {
         let timerInterval;
-        if (!levelDone && !gameOver) { // Stop timer on gameOver too
+        if (!levelDone && !gameOver) { 
             timerInterval = setInterval(() => {
                 setTimer((prev) => prev + 1);
             }, 1000);
@@ -247,10 +246,10 @@ export const TestLevel = () => {
         }
     }, [levelDone]);
 
-    const calculateStars = useCallback((time) => { // useCallback for stability
+    const calculateStars = useCallback((time) => { 
         if (time <= 40) return 3;
         if (time > 40 && time <= 60) return 2;
-        return 1; // Adjusted condition based on user text.
+        return 1; 
         
     }, []);
 
@@ -269,7 +268,7 @@ export const TestLevel = () => {
         velY: 0, 
         playerType: 'fire', 
         onGround: false,
-        standingOnPlatformId: null, // NEW PROPERTY
+        standingOnPlatformId: null, 
         color: 'rgb(255, 89, 29)', 
         controls: { left: 'a', right: 'd', jump: 'w' },
         cyrillic_controls: { left: 'ф', right: 'в', jump: 'ц' }
@@ -277,7 +276,7 @@ export const TestLevel = () => {
 
     const waterPlayer = useRef({
         x: 150, y: 50, width: 40, height: 40, velY: 0, playerType: 'water', onGround: false,
-        standingOnPlatformId: null, // NEW PROPERTY
+        standingOnPlatformId: null, 
         color: 'rgb(0, 7, 212)', controls: { left: 'ArrowLeft', right: 'ArrowRight', jump: 'ArrowUp' }
     });
 
@@ -291,28 +290,27 @@ export const TestLevel = () => {
     setGameOverMessage("");
 
     firePlayer.current.x = 100;
-    firePlayer.current.y = 50; // Start above ground
+    firePlayer.current.y = 50; 
     firePlayer.current.velY = 0;
     firePlayer.current.onGround = false;
 
     waterPlayer.current.x = 150;
-    waterPlayer.current.y = 50; // Start above ground
+    waterPlayer.current.y = 50; 
     waterPlayer.current.velY = 0;
     waterPlayer.current.onGround = false;
 
-    // Reset buttons and moving platforms
+    
     setButtons(prevButtons => prevButtons.map(b => ({ ...b, isPressed: false })));
     setMovingPlatforms(prevMovingPlats => prevMovingPlats.map(mp => ({ ...mp, currentY: mp.originalY })));
     setAnyButtonPressed(false);
-        // ... other resets
+        
         firePlayer.current.velY = 0;
         firePlayer.current.onGround = false;
-        firePlayer.current.standingOnPlatformId = null; // RESET
+        firePlayer.current.standingOnPlatformId = null; 
 
         waterPlayer.current.velY = 0;
         waterPlayer.current.onGround = false;
-        waterPlayer.current.standingOnPlatformId = null; // RESET
-        // ... rest of reset
+        waterPlayer.current.standingOnPlatformId = null; 
     };
 
 
@@ -349,15 +347,15 @@ export const TestLevel = () => {
 
         if (doJump && wasOnGroundInitially) {
             player.velY = jumpForce;
-            player.standingOnPlatformId = null; // Player jumped, no longer "stuck" to platform
-            // player.onGround will be set to false next, then re-evaluated
+            player.standingOnPlatformId = null; 
+            
         }
 
-        // Apply gravity AFTER potential pre-adjustment from platform movement (in main loop)
+        
         player.velY += gravity;
         player.y += player.velY;
 
-        player.onGround = false; // Assume not on ground until collision proves otherwise
+        player.onGround = false; 
 
         const allPlatforms = [
             ...currentStaticPlatforms.filter(p => !p.holeType),
@@ -370,12 +368,12 @@ export const TestLevel = () => {
         let landedOnStaticThisFrame = false;
 
         allPlatforms.forEach((plat) => {
-            // Check for landing: Was player above or at the same level, and now their feet are on the platform?
-            const wasPlayerFeetAboveOrAtPlatTop = prevY + player.height <= plat.y + 1; // +1 for tolerance
-            const isPlayerFallingOrStationary = player.velY >= -0.01; // Account for tiny residual velocity
+            
+            const wasPlayerFeetAboveOrAtPlatTop = prevY + player.height <= plat.y + 1; 
+            const isPlayerFallingOrStationary = player.velY >= -0.01; 
             
             const isPlayerFeetCurrentlyOnPlat = player.y + player.height >= plat.y &&
-                                               player.y + player.height <= plat.y + plat.height + 1; // Small tolerance
+                                               player.y + player.height <= plat.y + plat.height + 1; 
             const isPlayerHorizontallyAligned = player.x + player.width > plat.x && player.x < plat.x + plat.width;
 
             if (wasPlayerFeetAboveOrAtPlatTop && isPlayerFallingOrStationary && isPlayerFeetCurrentlyOnPlat && isPlayerHorizontallyAligned) {
@@ -389,7 +387,7 @@ export const TestLevel = () => {
                 }
             }
 
-            // Head bump
+            
             const wasPlayerHeadBelowOrAtPlatBottom = prevY >= plat.y + plat.height -1;
             const isPlayerMovingUp = player.velY < 0;
             const isPlayerHeadCurrentlyHittingPlat = player.y <= plat.y + plat.height && player.y >= plat.y;
@@ -398,7 +396,7 @@ export const TestLevel = () => {
                 player.velY = 0;
             }
             
-            // Side collisions
+           
             const isPlayerVerticallyWithinPlat = player.y + player.height > plat.y && player.y < plat.y + plat.height;
             if (isPlayerVerticallyWithinPlat) {
                  const wasPlayerLeftOfPlat = prevX + player.width <= plat.x;
@@ -412,10 +410,10 @@ export const TestLevel = () => {
             player.standingOnPlatformId = landedOnMovingThisFrameId;
         } else if (landedOnStaticThisFrame) {
             player.standingOnPlatformId = null;
-        } else if (!player.onGround) { // If no landing collision set onGround to true
+        } else if (!player.onGround) { 
             player.standingOnPlatformId = null;
         }
-        // If player is onGround but standingOnPlatformId is null, it means they are on a static platform.
+       
 
         if (player.y + player.height > groundY) {
             player.y = groundY - player.height;
@@ -445,12 +443,12 @@ export const TestLevel = () => {
     useEffect(() => {
         const handleKeyDown = (e) => {
             const keyToStore = e.key.length === 1 ? e.key.toLowerCase() : e.key;
-            // console.log("KeyDown: ", keyToStore);
+            console.log("KeyDown: ", keyToStore);
             setKeys((prevKeys) => ({ ...prevKeys, [keyToStore]: true }));
         };
         const handleKeyUp = (e) => {
             const keyToStore = e.key.length === 1 ? e.key.toLowerCase() : e.key;
-            // console.log("KeyUp: ", keyToStore);
+            console.log("KeyUp: ", keyToStore);
             setKeys((prevKeys) => ({ ...prevKeys, [keyToStore]: false }));
         };
 
@@ -473,7 +471,7 @@ export const TestLevel = () => {
             const sY = (val) => val * scaleY;
             const sAvg = (val) => val * Math.min(scaleX, scaleY);
 
-            // 1. Update Button States
+            
             let anyBtnPressedThisFrame = false;
         const updatedButtons = buttons.map(btn => {
             const isFireOn = firePlayer.current.x < btn.x + btn.width && firePlayer.current.x + firePlayer.current.width > btn.x &&
@@ -491,7 +489,7 @@ export const TestLevel = () => {
             setAnyButtonPressed(anyBtnPressedThisFrame);
         }
 
-        // 2. Calculate New Moving Platform Positions
+        
         const platformDeltas = {};
         const newCalculatedMovingPlatforms = movingPlatforms.map(mp => {
             const prevPlatformY = mp.currentY;
@@ -507,7 +505,7 @@ export const TestLevel = () => {
             return { ...mp, currentY: nextPlatformY };
         });
 
-        // 3. Pre-Adjust Player Position on Moving Platforms
+       
         [firePlayer.current, waterPlayer.current].forEach(player => {
             if (player.onGround && player.standingOnPlatformId) {
                 const deltaY = platformDeltas[player.standingOnPlatformId];
@@ -520,30 +518,30 @@ export const TestLevel = () => {
             }
         });
         
-        // 4. Update React state for moving platforms
+        
         if (JSON.stringify(movingPlatforms.map(mp => mp.currentY)) !== JSON.stringify(newCalculatedMovingPlatforms.map(mp => mp.currentY))) {
             setMovingPlatforms(newCalculatedMovingPlatforms);
         }
 
-        // 5. Handle Player Movement & Collisions
+        
         handleMovement(firePlayer, newCalculatedMovingPlatforms, staticPlatforms);
         handleMovement(waterPlayer, newCalculatedMovingPlatforms, staticPlatforms);
 
-        // 6. Check if Players Died
+       
         if (checkIfPlayerDied(firePlayer, staticPlatforms) || checkIfPlayerDied(waterPlayer, staticPlatforms)) {
              animationFrameId = requestAnimationFrame(loop);
              return;
         }
 
-        // --- МАСШТАБУВАННЯ ТА МАЛЮВАННЯ (використовує sX, sY, sAvg) ---
+       
         
-        // Визначаємо хелпери для малювання на основі поточного розміру canvas
+        
         
 
-        // 7. Drawing
-        ctx.clearRect(0, 0, canvas.width, canvas.height); // canvas.width/height вже масштабовані
+        
+        ctx.clearRect(0, 0, canvas.width, canvas.height); 
 
-        // Малюємо статичні платформи та ями
+        
         staticPlatforms.forEach((plat) => {
             if (!plat.holeType) ctx.fillStyle = 'gray';
             else if (plat.holeType === 'fire') ctx.fillStyle = 'rgba(255, 68, 0, 0.5)';
@@ -551,7 +549,7 @@ export const TestLevel = () => {
             ctx.fillRect(sX(plat.x), sY(plat.y), sX(plat.width) + sY(1), sY(plat.height) + sY(1)); 
         });
         
-        // Малюємо кнопки
+        
         updatedButtons.forEach(btn => {
             ctx.fillStyle = btn.isPressed ? btn.pressedColor : btn.color;
             const buttonDrawY = btn.isPressed ? btn.originalY + btn.pressedYOffset : btn.originalY;
@@ -559,12 +557,12 @@ export const TestLevel = () => {
             ctx.fillRect(sX(btn.x), sY(buttonDrawY), sX(btn.width), sY(buttonDrawHeight));
         });
         
-        // Малюємо рухомі платформи та їх індикатори
+        
         newCalculatedMovingPlatforms.forEach(mp => {
             ctx.fillStyle = mp.color;
             ctx.fillRect(sX(mp.x), sY(mp.currentY), sX(mp.width), sY(mp.height));
 
-            const lineThickness = sAvg(3); // Використовуємо sAvg для ліній
+            const lineThickness = sAvg(3); 
             const lineColor = anyButtonPressed ? 'rgb(255, 140, 0)' : 'rgb(255, 182, 93)';
 
             const unscaledLineWidth = mp.width * 0.5;
@@ -579,12 +577,12 @@ export const TestLevel = () => {
             ctx.stroke();
         });
 
-        // Малюємо фінішні зони
+        
         finishZones.forEach((zone) => {
             ctx.fillStyle = zone.color;
             ctx.fillRect(sX(zone.x), sY(zone.y), sX(zone.width), sY(zone.height));
             
-            ctx.lineWidth = sAvg(2); // Використовуємо sAvg для ліній
+            ctx.lineWidth = sAvg(2); 
             if (zone.playerType === 'fire') {
                 ctx.strokeStyle = 'rgb(255, 90, 30)';
             } else {
@@ -593,13 +591,13 @@ export const TestLevel = () => {
             ctx.strokeRect(sX(zone.x), sY(zone.y), sX(zone.width), sY(zone.height));
         });
 
-        // Малюємо гравців
+        
         [firePlayer.current, waterPlayer.current].forEach((p) => {
             ctx.fillStyle = p.color;
             ctx.fillRect(sX(p.x), sY(p.y), sX(p.width), sY(p.height));
         });
 
-        // --- ЛОГІКА ЗАВЕРШЕННЯ РІВНЯ ---
+        
         const fireDone = hasReachedFinish(firePlayer.current, finishZones[0]);
         const waterDone = hasReachedFinish(waterPlayer.current, finishZones[1]);
         
@@ -676,11 +674,7 @@ export const TestLevel = () => {
                     </div> 
                   )}  
 
-                    {/* {!nextLevelUnlocked && (
-                        <p className={styles.unlockMessage}>
-                            (Earn 2+ stars to unlock the next level)
-                        </p>
-                    )} */}
+                    
         </div>
     </div>
         

@@ -190,29 +190,26 @@ text-shadow: rgb(149, 149, 149) 1px 1px 0px;
 }
 
 
-/* .modalStarsContainer{
-    font-size: 25px;
-} */
+
 
 .modalStarsContainer {
     position: relative;
     display: flex; 
-    justify-content: center;
+    justify-content: center; 
     gap: 5px;
     margin: -3px 0;
     font-size: 1.7rem;
+    left: 34%;
+    width: fit-content; 
 }
 
 .starsBackground {
-    
     display: contents; 
 }
-
 
 .modalStarPlaceholder {
     opacity: 0.2; 
 }
-
 
 .starsForeground {
     position: absolute; 
@@ -221,25 +218,17 @@ text-shadow: rgb(149, 149, 149) 1px 1px 0px;
     width: 100%;
     height: 100%;
     
-    
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
     gap: 5px;
 }
 
-
 .modalStarActive {
-    
     opacity: 0;
     transform: scale(0);
-
-    
     animation: starPopIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-
-    
-    filter: drop-shadow(0 0 3px gold);
+    filter: drop-shadow(0 0 5px gold);
 }
-
 
 @keyframes starPopIn {
     0% {
@@ -268,7 +257,7 @@ text-shadow: rgb(149, 149, 149) 1px 1px 0px;
     }
 
     .playAgain{
-        left: 130px
+        
     }
 
     .again {
@@ -290,8 +279,8 @@ text-shadow: rgb(149, 149, 149) 1px 1px 0px;
         font-size: 25px;
     }
 
-    .playAgain{
-        left: 200px
+    .again{
+        left: 100px;
     }
 
     .reloadIcon{

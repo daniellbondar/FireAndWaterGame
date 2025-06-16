@@ -86,10 +86,10 @@ function Main() {
                         }
                     }
 
-                    // ▼▼▼ КЛЮЧОВА ЗМІНА: Визначаємо, яку іконку показати, ЗАЗДАЛЕГІДЬ ▼▼▼
+                    
                     const iconSrc = isLocked ? lockedIcon : unlockedIcon;
 
-                    // --- Етап 2: Рендеринг ---
+                    
                     const levelContent = (
                         <>
                             <div className={styles.levelHeader}>
@@ -98,7 +98,7 @@ function Main() {
                                 <img src={iconSrc} alt={isLocked ? "Locked" : "Unlocked"} className={styles.lockIcon} />
                             </div>
 
-                            {/* Показуємо решту інформації в залежності від стану */}
+                            
                             {isLocked ? (
                                 <p className={styles.lockMessage}>{lockMessage}</p>
                             ) : data.completed ? (
@@ -112,20 +112,7 @@ function Main() {
                         </>
                     );
 
-                    // return (
-                    //     <div key={level.id} >
-                    //         {/* ... */}
-                    //         {data.completed && (
-                    //             <>
-                    //                 {/* ▼▼▼ І ЦЕЙ РЯДОК ДЛЯ ВІЗУАЛЬНОЇ ПЕРЕВІРКИ ▼▼▼ */}
-                    //                 <p style={{ color: 'white', background: 'black' }}>
-                    //                     DEBUG: Stars for {level.id} is {data.stars} (type: {typeof data.stars})
-                    //                 </p>
-                    //             </>
-                    //         )}
-                    //         {levelContent}
-                    //     </div>
-                    // );
+                    
 
                     return isLocked ? (
                         <div key={level.id} className={`${styles.levels} ${styles.locked}`}>
